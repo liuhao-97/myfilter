@@ -115,6 +115,9 @@ gst_data_reschedule_init(GstDataReschedule *filter)
   gst_element_add_pad(GST_ELEMENT(filter), filter->srcpad);
 
   filter->silent = FALSE;
+
+  // Initialize the adapter
+  filter->adapter = gst_adapter_new();
 }
 
 static void
@@ -193,14 +196,49 @@ static GstFlowReturn
 gst_data_reschedule_chain(GstPad *pad, GstObject *parent, GstBuffer *buf)
 {
   GstDataReschedule *filter;
+  GstAdapter *adapter;
+  GstFlowReturn ret = GST_FLOW_OK;
 
   filter = GST_DATA_RESCHEDULE(parent);
+  adapter = filter->adapter;
 
-  if (filter->silent == FALSE)
-    g_print("I'm plugged, therefore I'm in.\n");
+  // put buffer into adapter
+  gst_adapter_push(adapter, buf);
 
-  /* just push out the incoming buffer without touching it */
-  return gst_pad_push(filter->srcpad, buf);
+  // while we can read out 64 bytes, process them
+  while (gst_adapter_available(adapter) >= 64 && ret == GST_FLOW_OK)
+  {
+    const guint8 *data = gst_adapter_map(adapter, 64);
+    // use flowreturn as an error value
+    // Create a new buffer to hold the processed data
+    gsize data_size = 64;
+    GstBuffer *outbuf = gst_buffer_new_and_alloc(data_size);
+
+    // Map the buffer for writing
+    GstMapInfo map;
+    if (gst_buffer_map(outbuf, &map, GST_MAP_WRITE))
+    {
+      // Write data into the buffer (in this case just copy the input data)
+      memcpy(map.data, data, data_size);
+
+      // Unmap the buffer after writing
+      gst_buffer_unmap(outbuf, &map);
+    }
+
+    // Push the new buffer downstream
+    ret = gst_pad_push(filter->srcpad, outbuf);
+
+    g_print("reach 64 bytes.\n");
+    gst_adapter_unmap(adapter);
+    gst_adapter_flush(adapter, 64);
+  }
+  return ret;
+
+  // if (filter->silent == FALSE)
+  //   g_print("I'm plugged, therefore I'm in.\n");
+
+  // /* just push out the incoming buffer without touching it */
+  // return gst_pad_push(filter->srcpad, buf);
 }
 
 /* entry point to initialize the plug-in
