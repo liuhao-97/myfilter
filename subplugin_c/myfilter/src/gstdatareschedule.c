@@ -58,6 +58,7 @@ static void gst_data_reschedule_set_property(GObject *object,
                                              guint prop_id, const GValue *value, GParamSpec *pspec);
 static void gst_data_reschedule_get_property(GObject *object,
                                              guint prop_id, GValue *value, GParamSpec *pspec);
+static void gst_data_reschedule_finalize(GObject *object);
 
 static gboolean gst_data_reschedule_sink_event(GstPad *pad,
                                                GstObject *parent, GstEvent *event);
@@ -78,6 +79,7 @@ gst_data_reschedule_class_init(GstDataRescheduleClass *klass)
 
   gobject_class->set_property = gst_data_reschedule_set_property;
   gobject_class->get_property = gst_data_reschedule_get_property;
+  gobject_class->finalize = gst_data_reschedule_finalize;
 
   g_object_class_install_property(gobject_class, PROP_SILENT,
                                   g_param_spec_boolean("silent", "Silent", "Produce verbose output ?",
@@ -198,6 +200,7 @@ gst_data_reschedule_chain(GstPad *pad, GstObject *parent, GstBuffer *buf)
   GstDataReschedule *filter;
   GstAdapter *adapter;
   GstFlowReturn ret = GST_FLOW_OK;
+  gsize data_size = 64;
 
   filter = GST_DATA_RESCHEDULE(parent);
   adapter = filter->adapter;
@@ -211,7 +214,7 @@ gst_data_reschedule_chain(GstPad *pad, GstObject *parent, GstBuffer *buf)
     const guint8 *data = gst_adapter_map(adapter, 64);
     // use flowreturn as an error value
     // Create a new buffer to hold the processed data
-    gsize data_size = 64;
+
     GstBuffer *outbuf = gst_buffer_new_and_alloc(data_size);
 
     // Map the buffer for writing
@@ -239,6 +242,21 @@ gst_data_reschedule_chain(GstPad *pad, GstObject *parent, GstBuffer *buf)
 
   // /* just push out the incoming buffer without touching it */
   // return gst_pad_push(filter->srcpad, buf);
+}
+
+static void
+gst_data_reschedule_finalize(GObject *object)
+{
+  GstDataReschedule *filter = GST_DATA_RESCHEDULE(object);
+
+  // Unref the adapter to release memory
+  if (filter->adapter)
+  {
+    g_object_unref(filter->adapter);
+    filter->adapter = NULL;
+  }
+
+  G_OBJECT_CLASS(gst_data_reschedule_parent_class)->finalize(object);
 }
 
 /* entry point to initialize the plug-in
