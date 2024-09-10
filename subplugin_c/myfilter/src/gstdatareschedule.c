@@ -34,8 +34,20 @@ enum
 enum
 {
   PROP_0,
+  PROP_SINGLE_FRAME_SIZE,
+  PROP_ACCUMULATE_FRAME_NUMBER,
   PROP_SILENT
 };
+
+/**
+ * @brief Each frame data size in input buffer.
+ */
+#define DEFAULT_SINGLE_FRAME_SIZE 1
+
+/**
+ * @brief Accumulate frame size in output buffer.
+ */
+#define DEFAULT_ACCUMULATE_FRAME_NUMBER 1
 
 /* the capabilities of the inputs and outputs.
  *
@@ -81,6 +93,29 @@ gst_data_reschedule_class_init(GstDataRescheduleClass *klass)
   gobject_class->get_property = gst_data_reschedule_get_property;
   gobject_class->finalize = gst_data_reschedule_finalize;
 
+  /**
+   * GstTensorReschedule::frames-in:
+   *
+   * The number of frames in incoming buffer.
+   * GstTensorReschedule itself cannot get the frames in buffer. (buffer is a sinle tensor instance)
+   * GstTensorReschedule calculates the size of single frame with this property.
+   */
+  g_object_class_install_property(gobject_class, PROP_SINGLE_FRAME_SIZE,
+                                  g_param_spec_uint("single-frame-size", "single frame size (byte)",
+                                                    "single frame size (byte)", 1, G_MAXUINT,
+                                                    DEFAULT_SINGLE_FRAME_SIZE, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  /**
+   * GstTensorReschedule::frames-out:
+   *
+   * The number of frames in outgoing buffer. (buffer is a sinle tensor instance)
+   * GstTensorReschedule calculates the size of outgoing frames and pushes a buffer to source pad.
+   */
+  g_object_class_install_property(gobject_class, PROP_ACCUMULATE_FRAME_NUMBER,
+                                  g_param_spec_uint("accumulate-frame-number", "accumulate frame number",
+                                                    "accumulate frame number", 1, G_MAXUINT,
+                                                    DEFAULT_ACCUMULATE_FRAME_NUMBER, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
   g_object_class_install_property(gobject_class, PROP_SILENT,
                                   g_param_spec_boolean("silent", "Silent", "Produce verbose output ?",
                                                        FALSE, G_PARAM_READWRITE));
@@ -120,6 +155,8 @@ gst_data_reschedule_init(GstDataReschedule *filter)
 
   // Initialize the adapter
   filter->adapter = gst_adapter_new();
+  filter->single_frame_size = DEFAULT_SINGLE_FRAME_SIZE;
+  filter->accumulate_frame_number = DEFAULT_ACCUMULATE_FRAME_NUMBER;
 }
 
 static void
@@ -130,6 +167,12 @@ gst_data_reschedule_set_property(GObject *object, guint prop_id,
 
   switch (prop_id)
   {
+  case PROP_SINGLE_FRAME_SIZE:
+    filter->single_frame_size = g_value_get_uint(value);
+    break;
+  case PROP_ACCUMULATE_FRAME_NUMBER:
+    filter->accumulate_frame_number = g_value_get_uint(value);
+    break;
   case PROP_SILENT:
     filter->silent = g_value_get_boolean(value);
     break;
@@ -147,6 +190,12 @@ gst_data_reschedule_get_property(GObject *object, guint prop_id,
 
   switch (prop_id)
   {
+  case PROP_SINGLE_FRAME_SIZE:
+    g_value_set_uint(value, filter->single_frame_size);
+    break;
+  case PROP_ACCUMULATE_FRAME_NUMBER:
+    g_value_set_uint(value, filter->accumulate_frame_number);
+    break;
   case PROP_SILENT:
     g_value_set_boolean(value, filter->silent);
     break;
@@ -200,29 +249,46 @@ gst_data_reschedule_chain(GstPad *pad, GstObject *parent, GstBuffer *buf)
   GstDataReschedule *filter;
   GstAdapter *adapter;
   GstFlowReturn ret = GST_FLOW_OK;
-  gsize data_size = 64;
+  gsize single_frame_size, accumulate_frame_number, accumulate_frame_size;
+  gsize buffersize = gst_buffer_get_size(buf); // Get the size of the buffer data
 
   filter = GST_DATA_RESCHEDULE(parent);
   adapter = filter->adapter;
+  single_frame_size = filter->single_frame_size;
+  accumulate_frame_number = filter->accumulate_frame_number;
+  accumulate_frame_size = single_frame_size * accumulate_frame_number;
+
+  // Check if single_frame_size is not equal to buffersize
+  if (single_frame_size != buffersize)
+  {
+    g_print("Warning: Single frame size (%zu) is not equal to buffer size (%zu)\n",
+            single_frame_size, buffersize);
+    g_assert(single_frame_size == buffersize);
+  }
+  else
+  {
+    // Process normally if the sizes match
+    // Your processing logic here
+  }
 
   // put buffer into adapter
   gst_adapter_push(adapter, buf);
 
-  // while we can read out 64 bytes, process them
-  while (gst_adapter_available(adapter) >= 64 && ret == GST_FLOW_OK)
+  // while we can read out accumulate_frame_size bytes, process them
+  while (gst_adapter_available(adapter) >= accumulate_frame_size && ret == GST_FLOW_OK)
   {
-    const guint8 *data = gst_adapter_map(adapter, 64);
+    const guint8 *data = gst_adapter_map(adapter, accumulate_frame_size);
     // use flowreturn as an error value
     // Create a new buffer to hold the processed data
 
-    GstBuffer *outbuf = gst_buffer_new_and_alloc(data_size);
+    GstBuffer *outbuf = gst_buffer_new_and_alloc(accumulate_frame_size);
 
     // Map the buffer for writing
     GstMapInfo map;
     if (gst_buffer_map(outbuf, &map, GST_MAP_WRITE))
     {
       // Write data into the buffer (in this case just copy the input data)
-      memcpy(map.data, data, data_size);
+      memcpy(map.data, data, accumulate_frame_size);
 
       // Unmap the buffer after writing
       gst_buffer_unmap(outbuf, &map);
@@ -231,9 +297,10 @@ gst_data_reschedule_chain(GstPad *pad, GstObject *parent, GstBuffer *buf)
     // Push the new buffer downstream
     ret = gst_pad_push(filter->srcpad, outbuf);
 
-    g_print("reach 64 bytes.\n");
+    g_print("reach %zu bytes.\n", accumulate_frame_size);
+
     gst_adapter_unmap(adapter);
-    gst_adapter_flush(adapter, 64);
+    gst_adapter_flush(adapter, accumulate_frame_size);
   }
   return ret;
 
