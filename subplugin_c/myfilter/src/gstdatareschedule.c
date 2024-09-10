@@ -282,8 +282,6 @@ gst_data_reschedule_chain(GstPad *pad, GstObject *parent, GstBuffer *buf)
   while (gst_adapter_available(adapter) >= accumulate_frame_size && ret == GST_FLOW_OK)
   {
     const guint8 *data = gst_adapter_map(adapter, accumulate_frame_size);
-    guint8 *new_data = g_malloc(push_out_frame_size); // Allocate memory for the new data
-
     // use flowreturn as an error value
 
     // Print the data contents in hex format
@@ -305,17 +303,23 @@ gst_data_reschedule_chain(GstPad *pad, GstObject *parent, GstBuffer *buf)
     // Map the buffer for writing
     GstMapInfo map;
     gsize j;
+    gsize idx;
     if (gst_buffer_map(outbuf, &map, GST_MAP_WRITE))
     {
       for (i = 0; i < accumulate_frame_number; i++)
       {
+        idx = data[i * single_frame_size + 1] - 1;
+        g_print("idx: %zu\n", idx);
+
         // Copy each frame, skipping the first two bytes
-        memcpy(new_data + (i * new_single_frame_size), data + (i * single_frame_size) + 2, new_single_frame_size);
+        // FIX
+        memcpy(map.data + (idx * new_single_frame_size), data + (i * single_frame_size) + 2, new_single_frame_size);
+        // memcpy(map.data + (idx * new_single_frame_size), data + (i * single_frame_size), new_single_frame_size);
 
         // Print the new frame in hex format
         for (j = 0; j < new_single_frame_size; j++)
         {
-          g_print("%02x ", new_data[i * new_single_frame_size + j]);
+          g_print("%02x ", map.data[idx * new_single_frame_size + j]);
         }
         g_print("\n"); // New line after printing each frame
       }
