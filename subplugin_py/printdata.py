@@ -5,7 +5,7 @@ gi.require_version('Gst', '1.0')
 gi.require_version('GstBase', '1.0')
 
 from gi.repository import Gst, GObject, GstBase
-
+import struct
 
 # Initialize GStreamer
 Gst.init(None)
@@ -45,36 +45,26 @@ class Printdata(GstBase.BaseTransform):
             print("Failed to map buffer")
             return Gst.FlowReturn.ERROR
 
-        # Print the buffer data (first 20 bytes for example)
+        # Print the buffer data 
         data = map_info.data
-        print("old Buffer data:", data[:])
+        unpacked_byte_list=[]
+        for i in data:
+            unpacked_byte = struct.unpack('B', bytes([i]))  # 'i' must be passed as a single byte
+            unpacked_byte_list.append(unpacked_byte[0])
+        # print("Buffer data:", data[:])
+        print("Buffer data:", unpacked_byte_list)
 
         # Unmap the buffer when done
         buf.unmap(map_info)
    
-        new_data = b'h' + data[:]
-        # print(new_data)
- 
-        # new_buffer = Gst.Buffer.new_allocate(None, len(new_data), None)
-        # success, map_info = new_buffer.map(Gst.MapFlags.WRITE)
-        # if not success:
-        #     print("Failed to map buffer")
-        #     return Gst.FlowReturn.ERROR
-        # new_buffer.fill(0, new_data)
-        # success, new_map_info = new_buffer.map(Gst.MapFlags.READ)
-        # if not success:
-        #     print("Failed to map buffer")
-        #     return Gst.FlowReturn.ERROR
-        # print("new Buffer data:", new_map_info.data[:])
-        # new_buffer.unmap(new_map_info)
-        
-        new_memory= Gst.Memory.new_wrapped(0, new_data, len(new_data), 0, None, None)
-        buf.replace_all_memory(new_memory)
-        success, map_info = buf.map(Gst.MapFlags.READ)
-        if success:
-            print("New Buffer data:", map_info.data[:])
-            buf.unmap(map_info)
+        # new_data = b'h' + data[:]
 
+        # new_memory= Gst.Memory.new_wrapped(0, new_data, len(new_data), 0, None, None)
+        # buf.replace_all_memory(new_memory)
+        # success, map_info = buf.map(Gst.MapFlags.READ)
+        # if success:
+        #     print("New Buffer data:", map_info.data[:])
+        #     buf.unmap(map_info)
 
         return Gst.FlowReturn.OK  # Pass the buffer along the pipeline
 
