@@ -284,24 +284,25 @@ gst_data_reschedule_chain(GstPad *pad, GstObject *parent, GstBuffer *buf)
     const guint8 *data = gst_adapter_map(adapter, accumulate_frame_size);
     // use flowreturn as an error value
 
-    // Print the data contents in hex format
-    gsize i;
-    g_print("Data contents (size: %zu):\n", accumulate_frame_size);
-    for (i = 0; i < accumulate_frame_size; i++)
-    {
-      g_print("%02x ", data[i]); // Print each byte in hex format
-      if ((i + 1) % single_frame_size == 0)
-      {
-        g_print("\n"); // New line after every 16 bytes for better readability
-      }
-    }
-    g_print("\n");
+    // // Print the data contents in hex format
+    // gsize i;
+    // g_print("Data contents (size: %zu):\n", accumulate_frame_size);
+    // for (i = 0; i < accumulate_frame_size; i++)
+    // {
+    //   g_print("%02x ", data[i]); // Print each byte in hex format
+    //   if ((i + 1) % single_frame_size == 0)
+    //   {
+    //     g_print("\n"); // New line after every 16 bytes for better readability
+    //   }
+    // }
+    // g_print("\n");
 
     // Create a new buffer to hold the processed data
     GstBuffer *outbuf = gst_buffer_new_and_alloc(push_out_frame_size);
 
     // Map the buffer for writing
     GstMapInfo map;
+    gsize i;
     gsize j;
     gsize idx;
     if (gst_buffer_map(outbuf, &map, GST_MAP_WRITE))
@@ -309,19 +310,19 @@ gst_data_reschedule_chain(GstPad *pad, GstObject *parent, GstBuffer *buf)
       for (i = 0; i < accumulate_frame_number; i++)
       {
         idx = data[i * single_frame_size + 1] - 1;
-        g_print("idx: %zu\n", idx);
+        // g_print("idx: %zu\n", idx);
 
         // Copy each frame, skipping the first two bytes
         // FIX
         memcpy(map.data + (idx * new_single_frame_size), data + (i * single_frame_size) + 2, new_single_frame_size);
         // memcpy(map.data + (idx * new_single_frame_size), data + (i * single_frame_size), new_single_frame_size);
 
-        // Print the new frame in hex format
-        for (j = 0; j < new_single_frame_size; j++)
-        {
-          g_print("%02x ", map.data[idx * new_single_frame_size + j]);
-        }
-        g_print("\n"); // New line after printing each frame
+        // // Print the new frame in hex format
+        // for (j = 0; j < new_single_frame_size; j++)
+        // {
+        //   g_print("%02x ", map.data[idx * new_single_frame_size + j]);
+        // }
+        // g_print("\n"); // New line after printing each frame
       }
 
       // // Write data into the buffer (in this case just copy the input data)
