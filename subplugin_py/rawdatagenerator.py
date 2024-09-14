@@ -80,13 +80,12 @@ class Rawdatagenerator(GstBase.BaseSrc):
         if not self.data_sent:
             # data = b'Hello, this is a custom source!\n' 
             data=b''
-            for i in range(300):
-                data=data+struct.pack('B', i%3)
-                # all_num = struct.pack('B', self.header_value)
-                # print(all_num)
-                # indx = struct.pack('B', self.idx_in_tensor)
-                # print(indx)
-                # new_data = all_num + indx + data[:]
+            if self.header_value != 0:
+                data=data+struct.pack('B', self.header_value)
+                data=data+struct.pack('B', self.idx_in_tensor)
+            for i in range(100):
+                # data=data+struct.pack('B', i%3)
+                data=data+struct.pack('B', self.idx_in_tensor)
 
             buffer = Gst.Buffer.new_allocate(None, len(data), None)
             buffer.fill(0, data)   
@@ -94,10 +93,7 @@ class Rawdatagenerator(GstBase.BaseSrc):
             return Gst.FlowReturn.OK, buffer
         
         return Gst.FlowReturn.EOS, None
-
-
-
-
+    
 
 # Register the element as a GStreamer plugin
 GObject.type_register(Rawdatagenerator)
