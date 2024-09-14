@@ -1,0 +1,517 @@
+
+gst-launch-1.0 udpsrc port=6000 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=64:32:32:1, types=float32 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_filter framework=pytorch model=../../autoencoder_generator/model_segment/vgg16_cifar100/encoder_pos1_inch64_outch1_hw32.torchscript.pt input=32:32:64:1 inputtype=float32 inputname=input output=32:32:1:1 outputtype=float32 accelerator=true:gpu ! udpsink host=10.68.186.155 port=6001
+
+
+gst-launch-1.0  udpsrc port=6000 ! rtpgstdepay ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=64:32:32:1, type=float32 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_filter framework=pytorch model=../../autoencoder_generator/model_segment/vgg16_cifar100/encoder_pos1_inch64_outch1_hw32.torchscript.pt input=32:32:64:1 inputtype=float32 inputname=input output=32:32:1:1 outputtype=float32 accelerator=true:gpu ! udpsink host=10.68.186.155 port=6001
+
+
+
+
+
+
+gst-launch-1.0  filesrc location=rgb.jpg ! jpegdec ! videoconvert ! videoscale  ! video/x-raw, format=GRAY8, width=64, height=4096 !  tensor_converter ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=64:32:32:1, type=float32 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_filter framework=pytorch model=../../autoencoder_generator/model_segment/vgg16_cifar100/encoder_pos1_inch64_outch1_hw32.torchscript.pt input=32:32:64:1 inputtype=float32 inputname=input output=32:32:1:1 outputtype=float32 accelerator=true:gpu ! udpsink host=10.68.186.155 port=6001
+
+
+caps="application/x-rtp, media=(string)video, payload=(int)96, clock-rate=(int)90000, encoding-name=(string)X-GST"
+
+gst-launch-1.0 udpsrc port=6000  !  other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=512:2:2:1, type=float32 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_filter framework=pytorch model=../../autoencoder_generator/model_segment/vgg16_cifar100/encoder_pos10_inch512_outch8_hw2.torchscript.pt input=2:2:512:1 inputtype=float32 inputname=input output=2:2:8:1 outputtype=float32 accelerator=true:gpu ! udpsink host=10.68.186.155 port=6001
+
+
+gst-launch-1.0 udpsrc port=6000  caps="application/x-rtp" ! rtpgstdepay ! tensor_aggregator ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=512:2:2:1, type=float32 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_filter framework=pytorch model=../../autoencoder_generator/model_segment/vgg16_cifar100/encoder_pos10_inch512_outch8_hw2.torchscript.pt input=2:2:512:1 inputtype=float32 inputname=input output=2:2:8:1 outputtype=float32 accelerator=true:gpu ! udpsink host=10.68.186.155 port=6001
+
+
+gst-launch-1.0 udpsrc port=6000  caps="application/x-rtp, payload=(int)42, clock-rate=(int)90000, encoding-name=(string)X-GST" !  rtpgstdepay ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=512:2:2:1, type=float32 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_filter framework=pytorch model=../../autoencoder_generator/model_segment/vgg16_cifar100/encoder_pos10_inch512_outch8_hw2.torchscript.pt input=2:2:512:1 inputtype=float32 inputname=input output=2:2:8:1 outputtype=float32 accelerator=true:gpu ! udpsink host=10.68.186.155 port=6001
+
+gst-launch-1.0 udpsrc port=6000  caps="application/x-rtp, payload=(int)42, clock-rate=(int)90000, encoding-name=(string)X-GST" !  rtpgstdepay ! fakesink
+
+gst-launch-1.0 udpsrc port=6000  caps="application/x-rtp, payload=(int)42, clock-rate=(int)90000, encoding-name=(string)X-GST" !  rtpgstdepay ! udpsink host=10.68.186.155 port=6001
+
+gst-launch-1.0 udpsrc port=6000  caps="application/x-rtp, payload=(int)42, clock-rate=(int)90000, encoding-name=(string)X-GST" !  rtpgstdepay ! rtpgstpay ! udpsink host=10.68.186.155 port=6001
+
+
+
+
+
+
+gst-launch-1.0 udpsrc port=6000 ! application/x-rtp, payload=96 ! rtpgstdepay ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=512:2:2:1, type=float32 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_filter framework=pytorch model=../../autoencoder_generator/model_segment/vgg16_cifar100/encoder_pos10_inch512_outch8_hw2.torchscript.pt input=2:2:512:1 inputtype=float32 inputname=input output=2:2:8:1 outputtype=float32 accelerator=true:gpu ! udpsink host=10.68.186.155 port=6001
+
+gst-launch-1.0 udpsrc port=6000 ! application/x-rtp, media=application, payload=96, clock-rate=90000  ! rtpgstdepay ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=512:2:2:1, type=float32 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_filter framework=pytorch model=../../autoencoder_generator/model_segment/vgg16_cifar100/encoder_pos10_inch512_outch8_hw2.torchscript.pt input=2:2:512:1 inputtype=float32 inputname=input output=2:2:8:1 outputtype=float32 accelerator=true:gpu ! udpsink host=10.68.186.155 port=6001
+
+
+gst-launch-1.0 udpsrc port=6000 caps="application/x-rtp, media=(string)application, clock-rate=(int)90000,encoding-name=(string)X-GST"  ! rtpgstdepay ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=512:2:2:1, type=float32 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_filter framework=pytorch model=../../autoencoder_generator/model_segment/vgg16_cifar100/encoder_pos10_inch512_outch8_hw2.torchscript.pt input=2:2:512:1 inputtype=float32 inputname=input output=2:2:8:1 outputtype=float32 accelerator=true:gpu ! udpsink host=10.68.186.155 port=6001
+
+
+
+
+
+gst-launch-1.0 udpsrc port=6000 ! application/x-rtp, payload=96 ! rtpjitterbuffer latency=100 ! rtpgstdepay !  other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=512:2:2:1, type=float32 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_filter framework=pytorch model=../../autoencoder_generator/model_segment/vgg16_cifar100/encoder_pos10_inch512_outch8_hw2.torchscript.pt input=2:2:512:1 inputtype=float32 inputname=input output=2:2:8:1 outputtype=float32 accelerator=true:gpu ! udpsink host=10.68.186.155 port=6001
+
+
+
+
+
+
+
+gst-launch-1.0 udpsrc port=6000 ! application/x-gdp, payload=8192 ! queue !  gdpdepay !  other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=512:2:2:1, type=float32 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_filter framework=pytorch model=../../autoencoder_generator/model_segment/vgg16_cifar100/encoder_pos10_inch512_outch8_hw2.torchscript.pt input=2:2:512:1 inputtype=float32 inputname=input output=2:2:8:1 outputtype=float32 accelerator=true:gpu ! udpsink host=10.68.186.155 port=6001
+
+
+
+
+
+
+
+gst-launch-1.0 udpsrc port=6000 !  other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=512:2:2:1, type=float32 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_filter framework=pytorch model=../../autoencoder_generator/model_segment/vgg16_cifar100/encoder_pos10_inch512_outch8_hw2.torchscript.pt input=2:2:512:1 inputtype=float32 inputname=input output=2:2:8:1 outputtype=float32 accelerator=true:gpu ! udpsink host=10.68.186.155 port=6001
+
+
+gst-launch-1.0 udpsrc port=6000 ! gstdepay ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=512:2:2:1, type=float32 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_filter framework=pytorch model=../../autoencoder_generator/model_segment/vgg16_cifar100/encoder_pos10_inch512_outch8_hw2.torchscript.pt input=2:2:512:1 inputtype=float32 inputname=input output=2:2:8:1 outputtype=float32 accelerator=true:gpu ! udpsink host=10.68.186.155 port=6001
+
+
+
+
+gst-launch-1.0 -v  filesrc location=rgb.jpg ! jpegdec ! videoconvert ! videoscale  ! video/x-raw, format=RGB, width=64, height=64 !  tensor_converter ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=3:32:32:1, type=float32 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_filter framework=pytorch model=../../autoencoder_generator/model_segment/vgg16_cifar100/0_inch3_outch64_hw32.torchscript.pt input=32:32:3:1 inputtype=float32 inputname=input output=32:32:64:1 outputtype=float32 accelerator=true:gpu ! udpsink host=10.68.186.155 port=6001
+
+
+
+gst-launch-1.0  filesrc location=rgb.jpg ! jpegdec ! videoconvert ! videoscale  ! video/x-raw, format=RGB, width=64, height=1024 !  tensor_converter ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=64:32:32:1, type=float32 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_filter framework=pytorch model=../../autoencoder_generator/model_segment/vgg16_cifar100/encoder_pos1_inch64_outch1_hw32.torchscript.pt input=32:32:64:1 inputtype=float32 inputname=input output=32:32:1:1 outputtype=float32 accelerator=true:gpu ! udpsink host=10.68.186.155 port=6001
+
+
+
+gst-launch-1.0  filesrc location=rgb.jpg ! jpegdec ! videoconvert ! videoscale  ! video/x-raw, format=GRAY8, width=64, height=1024 !  tensor_converter ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=64:32:32:1, type=float32 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_filter framework=pytorch model=../../autoencoder_generator/model_segment/vgg16_cifar100/encoder_pos1_inch64_outch1_hw32.torchscript.pt input=32:32:64:1 inputtype=float32 inputname=input output=32:32:1:1 outputtype=float32 accelerator=true:gpu ! udpsink host=10.68.186.155 port=6001
+
+
+
+
+gst-launch-1.0   filesrc location=rgb.jpg ! jpegdec ! videoconvert ! videoscale  ! video/x-raw, format=RGB, width=32, height=32  !  tensor_converter ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=3:32:32:1, t
+ype=float32 ! udpsink host=10.68.186.155 port=6001
+
+
+
+
+
+gst-launch-1.0   filesrc location=rgb.jpg ! jpegdec ! videoconvert ! videoscale  ! video/x-raw, format=RGB, width=32, height=32  !  tensor_converter ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=3:32:32:1, type=uint8 ! tensor_transform mode=arithmetic option=typecast:float32,add:0.0,div:255.0 ! udpsink host=10.68.186.155 port=6001
+
+
+
+
+gst-launch-1.0  filesrc location=rgb.jpg ! jpegdec ! videoconvert ! videoscale  ! video/x-raw, format=RGB, width=32, height=32  !  tensor_converter ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=3:32:32:1, type=uint8 ! tensor_transform mode=arithmetic option=typecast:float32,add:0.0,div:255.0 ! tensor_transform mode=transpose option=1:2:0:3 !  tensor_filter framework=pytorch model=../../autoencoder_generator/model_segment/vgg16_cifar100/0_inch3_outch64_hw32.torchscript.pt input=32:32:3:1 inputtype=float32 inputname=input output=32:32:64:1 outputtype=float32 accelerator=true:gpu ! rtpgstpay ! udpsink host=10.68.186.155 port=6001
+
+
+
+
+
+gst-launch-1.0  filesrc location=rgb.jpg ! jpegdec ! videoconvert ! videoscale  ! video/x-raw, format=RGB, width=32, height=32  !  tensor_converter ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=3:32:32:1, type=uint8 ! tensor_transform mode=arithmetic option=typecast:float32,add:0.0,div:255.0 ! tensor_transform mode=transpose option=1:2:0:3 !  tensor_filter framework=pytorch model=../../autoencoder_generator/model_segment/vgg16_cifar100/0_inch3_outch64_hw32.torchscript.pt input=32:32:3:1 inputtype=float32 inputname=input output=32:32:64:1 outputtype=float32 accelerator=true:gpu ! rtpgstpay ! udpsink host=10.68.186.155 port=6001
+
+
+
+
+
+
+gst-launch-1.0 videotestsrc ! video/x-raw,format=RGB,width=640,height=480 ! tensor_converter ! tensor_aggregator frames-out=10 frames-flush=5 frames-dim=3
+
+gst-launch-1.0 udpsrc port=6000 !  other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=512:2:2:1, type=float32 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_filter framework=pytorch model=../../autoencoder_generator/model_segment/vgg16_cifar100/encoder_pos10_inch512_outch8_hw2.torchscript.pt input=2:2:512:1 inputtype=float32 inputname=input output=2:2:8:1 outputtype=float32 accelerator=true:gpu ! udpsink host=10.68.186.155 port=6001
+
+
+
+gst-launch-1.0 udpsrc port=6000 !  other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=512:2:2:1, type=uint8 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_aggregator frames-in=1  frames-out=2 frames-flush=2 frames-dim=3 ! tensor_sink
+
+gst-launch-1.0 videotestsrc ! video/x-raw,format=RGB,width=640,height=480 ! tensor_converter ! tensor_aggregator frames-out=10 frames-flush=5 frames-dim=3 ! tensor_sink
+
+gst-launch-1.0 videotestsrc ! video/x-raw,format=RGB,width=10,height=10 ! tensor_converter ! tensor_aggregator frames-out=2 frames-flush=5 frames-dim=3 ! udpsink host=10.68.186.155 port=6001
+
+
+gst-launch-1.0 videotestsrc ! videoconvert ! videoscale ! video/x-raw,height=1080,width=1920,format=BGR ! tensor_converter ! tensor_transform mode=typecast option=uint8 ! tensor_aggregator frames-in=1 frames-out=4 frames-flush=4 frames-dim=3 ! tensor_sink
+
+
+gst-launch-1.0 udpsrc port=6000  ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=512:2:2:1, type=uint8 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_aggregator frames-in=1  frames-out=2 frames-flush=2 frames-dim=3 ! tensor_sink
+
+
+
+gst-launch-1.0 udpsrc port=6000 !  other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=512:2:2:1, type=float32 ! tensor_sink
+
+gst-launch-1.0  filesrc location=rgb.jpg ! jpegdec ! videoconvert ! videoscale  ! video/x-raw, format=RGB, width=32, height=32  ! tensor_converter ! tensor_transform mode=typecast option=uint8 ! tensor_aggregator frames-in=1 frames-out=2 frames-flush=2 frames-dim=3 ! tensor_transform mode=transpose option=1:2:0:3  ! tensor_sink
+
+
+
+gst-launch-1.0  filesrc location=rgb.jpg ! jpegdec ! videoconvert ! videoscale  ! video/x-raw, format=RGB, width=32, height=32  ! tensor_converter ! tensor_transform mode=typecast option=uint8 ! tensor_aggregator frames-in=1 frames-out=2 frames-flush=2 frames-dim=3 ! tensor_transform mode=transpose option=1:2:0:3  ! udpsink host=10.68.186.155 port=6001
+
+
+
+# work
+gst-launch-1.0 videotestsrc ! videoconvert ! videoscale ! video/x-raw,height=10,width=10,format=BGR ! tensor_converter ! tensor_transform mode=typecast option=uint8 ! tensor_aggregator frames-in=1 frames-out=2 frames-flush=2 frames-dim=3 ! udpsink host=10.68.186.155 port=6001
+# work one frame per second
+gst-launch-1.0 videotestsrc ! videoconvert ! videoscale ! video/x-raw,height=10,width=10,format=BGR,framerate=1/1 ! tensor_converter ! tensor_transform mode=typecast option=uint8 ! tensor_aggregator frames-in=1 frames-out=2 frames-flush=2 frames-dim=3 ! udpsink host=10.68.186.155 port=6001
+
+
+gst-launch-1.0 videotestsrc ! videoconvert ! videoscale ! video/x-raw,height=10,width=10,format=BGR,framerate=1/1 ! tensor_converter ! tensor_transform mode=typecast option=uint8  ! udpsink host=10.68.187.212 port=6000
+
+
+
+# sender
+sudo docker exec 2be188fdd8a2 gst-launch-1.0 videotestsrc ! videoconvert ! videoscale ! video/x-raw,height=10,width=10,format=BGR,framerate=1/1 ! tensor_converter ! tensor_transform mode=typecast option=uint8  ! udpsink host=10.68.187.212 port=6000
+
+
+gst-launch-1.0 udpsrc port=6000 caps="application/x-rtp,media=(string)application, payload=(int)96"   ! other/tensors,format=static,framerate=1/1,num_tensors=1,dimensions=3:10:10:1, type=uint8 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_aggregator frames-in=1  frames-out=2 frames-flush=2 frames-dim=3 ! tensor_sink
+
+
+
+## using rtpgstpay and rtpgstdepay
+# sender
+sudo docker exec 2be188fdd8a2 gst-launch-1.0 videotestsrc ! videoconvert ! videoscale ! video/x-raw,height=10,width=10,format=BGR,framerate=1/1 ! tensor_converter ! tensor_transform mode=typecast option=uint8  ! rtpgstpay  !   udpsink host=10.68.187.212 port=6000
+# receiver
+gst-launch-1.0 udpsrc port=6000 caps="application/x-rtp,media=(string)application, payload=(int)96" ! rtpgstdepay  ! tensor_converter ! other/tensors,format=static,framerate=1/1,num_tensors=1,dimensions=3:10:10:1, type=uint8 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_aggregator frames-in=1  frames-out=2 frames-flush=2 frames-dim=3 ! tensor_sink
+
+
+
+
+
+gst-launch-1.0 udpsrc port=6001 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=3:10:10:1, types=uint8 ! tensor_aggregator frames-in=1 frames-out=2 frames-flush=2 frames-dim=3 ! tensor_sink name=tensor_sink
+
+
+gst-launch-1.0 udpsrc port=6000 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=3:10:10:1, types=uint8 ! tensor_aggregator frames-in=1 frames-out=2 frames-flush=2 frames-dim=3 ! udpsink host=10.68.186.155 port=7777
+
+
+
+gst-launch-1.0 udpsrc port=6000 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=64:32:32:1, types=float32 ! tensor_aggregator frames-in=1 frames-out=2 frames-flush=2 frames-dim=3 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_filter framework=pytorch model=../../autoencoder_generator/model_segment/vgg16_cifar100/encoder_pos1_inch64_outch1_hw32.torchscript.pt input=32:32:64:1 inputtype=float32 inputname=input output=32:32:1:1 outputtype=float32 accelerator=true:gpu ! udpsink host=10.68.186.155 port=7777
+
+gst-launch-1.0 udpsrc port=6000 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=4:16:16:1, types=float32 ! tensor_aggregator frames-in=1 frames-out=2 frames-flush=2 frames-dim=0 ! udpsink host=10.68.186.155 port=7777
+
+
+gst-launch-1.0 udpsrc port=6000 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=32:16:16:1, types=float32 ! tensor_aggregator frames-in=1 frames-out=2 frames-flush=2 frames-dim=0 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_filter framework=pytorch model=../../autoencoder_generator/model_segment/vgg16_cifar100/encoder_pos2_inch64_outch4_hw16.torchscript.pt input=16:16:64:1 inputtype=float32 inputname=input output=16:16:4:1 outputtype=float32 accelerator=true:gpu ! udpsink host=10.68.186.155 port=7777
+
+gst-launch-1.0 udpsrc port=6000 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=32:16:16:1, types=float32 !  tensor_transform mode=transpose option=1:2:0:3 ! tensor_aggregator frames-in=1 frames-out=2 frames-flush=2 frames-dim=2 ! tensor_filter framework=pytorch model=../../autoencoder_generator/model_segment/vgg16_cifar100/encoder_pos2_inch64_outch4_hw16.torchscript.pt input=16:16:64:1 inputtype=float32 inputname=input output=16:16:4:1 outputtype=float32 accelerator=true:gpu ! udpsink host=10.68.186.155 port=7777
+
+
+
+gst-launch-1.0 filesrc location=song.ogg ! decodebin ! tee name=t ! queue ! audioconvert ! audioresample ! autoaudiosink t. ! queue ! audioconvert ! goom ! videoconvert ! autovideosink
+
+
+
+gst-launch-1.0 udpsrc port=6000 ! tee name=t \
+t. ! queue ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=3:10:10:1, types=uint8 ! \
+compositor name=mix ! tensor_aggregator frames-in=1 frames-out=2 frames-flush=2 frames-dim=3 ! udpsink host=10.68.186.155 port=7777
+t. ! queue ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=2:10:10:1, types=uint8 ! mix.
+
+
+
+gst-launch-1.0 udpsrc port=6000 ! tee name=t t. ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=3:10:10:1, types=uint8 ! compositor name=mix ! tensor_aggregator frames-in=1 frames-out=2 frames-flush=2 frames-dim=3 ! udpsink host=10.68.186.155 port=7777 t. ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=2:10:10:1, types=uint8 ! mix.
+
+
+
+
+gst-launch-1.0 udpsrc port=6000 ! tee name=t \
+t. ! queue ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=3:10:10:1, types=uint8 ! \
+compositor name=mix ! tensor_aggregator frames-in=1 frames-out=2 frames-flush=2 frames-dim=3 ! udpsink host=10.68.186.155 port=7777
+t. ! queue ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=2:10:10:1, types=uint8 ! mix.
+
+
+gst-launch-1.0 udpsrc port=6000 ! tee name=t \
+t. ! queue ! video/x-raw,format=GRAY8,width=10,height=10 !
+compositor name=mix ! tensor_converter  !  udpsink host=10.68.186.155 port=7777
+t. ! queue ! video/x-raw,format=GRAY8,width=10,height=10 ! mix.
+
+
+gst-launch-1.0 udpsrc port=6000 ! tee name=t t. ! queue ! video/x-raw,format=GRAY8,width=10,height=10 ! compositor name=mix ! tensor_converter  !  udpsink host=10.68.186.155 port=7777 t. ! queue ! video/x-raw,format=GRAY8,width=10,height=10 ! mix.
+
+gst-launch-1.0 videotestsrc pattern=1 ! \
+video/x-raw, framerate=\(fraction\)10/1, width=100, height=100 ! \
+   compositor name=comp ! videoconvert ! fakesink \
+   videotestsrc !  \
+   video/x-raw, framerate=\(fraction\)5/1, width=320, height=240 ! comp.
+
+
+
+
+# work
+gst-launch-1.0 udpsrc port=6000 ! video/x-raw,framerate=\(fraction\)10/1,width=10,height=10,format=\(string\)RGB ! \
+compositor name=comp ! fakesink \
+udpsrc port=6001 ! video/x-raw,framerate=\(fraction\)10/1,width=20,height=10,format=\(string\)RGB ! comp.
+
+gst-launch-1.0 udpsrc port=6000 ! video/x-raw,framerate=\(fraction\)10/1,width=10,height=10,format=\(string\)RGB ! compositor name=comp ! fakesink udpsrc port=6001 ! video/x-raw,framerate=\(fraction\)10/1,width=20,height=10,format=\(string\)RGB ! comp.
+
+
+
+gst-launch-1.0 udpsrc port=6000 ! video/x-raw,framerate=\(fraction\)0/1,width=10,height=10,format=\(string\)RGB ! \
+compositor name=comp ! udpsink host=10.68.186.155 port=7777 \
+udpsrc port=6001 ! video/x-raw,framerate=\(fraction\)0/1,width=20,height=10,format=\(string\)RGB ! comp.
+
+
+gst-launch-1.0 udpsrc port=6000 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=32:16:16:1, types=float32 ! tensor_aggregator frames-in=1 frames-out=2 frames-flush=2 frames-dim=0 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_filter framework=pytorch model=../../autoencoder_generator/model_segment/vgg16_cifar100/encoder_pos2_inch64_outch4_hw16.torchscript.pt input=16:16:64:1 inputtype=float32 inputname=input output=16:16:4:1 outputtype=float32 accelerator=true:gpu ! udpsink host=10.68.186.155 port=7777
+
+
+gst-launch-1.0 udpsrc port=6000 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=1:20:10:1, types=float32 ! tensor_aggregator frames-in=1 frames-out=2 frames-flush=2 frames-dim=0 ! tensor_decoder ! videoconvert ! videoscale ! video/x-raw,framerate=\(fraction\)0/1,width=20,height=10,format=\(string\)RGB ! \
+compositor name=comp ! udpsink host=10.68.186.155 port=7777 \
+udpsrc port=6001 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=1:10:10:1, types=float32 ! tensor_aggregator frames-in=1 frames-out=2 frames-flush=2 frames-dim=0 ! tensor_decoder ! videoconvert ! videoscale ! video/x-raw,framerate=\(fraction\)0/1,width=10,height=10,format=\(string\)RGB ! comp.
+
+
+gst-launch-1.0 udpsrc port=6000 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=1:20:10:1, types=float32 ! tensor_aggregator frames-in=1 frames-out=2 frames-flush=2 frames-dim=0 !  videoconvert ! videoscale ! video/x-raw,framerate=\(fraction\)0/1,width=20,height=10,format=\(string\)RGB ! \
+compositor name=comp ! udpsink host=10.68.186.155 port=7777 \
+udpsrc port=6001 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=1:10:10:1, types=float32 ! tensor_aggregator frames-in=1 frames-out=2 frames-flush=2 frames-dim=0 ! videoconvert ! videoscale ! video/x-raw,framerate=\(fraction\)0/1,width=10,height=10,format=\(string\)RGB ! comp.
+
+
+
+gst-launch-1.0 udpsrc port=6000 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=2:10:10:1, types=uint8 ! tensor_aggregator frames-in=1 frames-out=2 frames-flush=2 frames-dim=0 !  videoconvert ! videoscale ! video/x-raw,framerate=\(fraction\)0/1,width=20,height=10,format=\(string\)RGB ! \
+compositor name=comp ! udpsink host=10.68.186.155 port=7777 \
+udpsrc port=6001 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=1:10:10:1, types=uint8 ! tensor_aggregator frames-in=1 frames-out=2 frames-flush=2 frames-dim=0 ! videoconvert ! videoscale ! video/x-raw,framerate=\(fraction\)0/1,width=10,height=10,format=\(string\)RGB ! comp.
+
+
+gst-launch-1.0 udpsrc port=6000 ! tee name=t t. ! queue ! video/x-raw,format=GRAY8,width=10,height=10 ! compositor name=mix ! tensor_converter  !  udpsink host=10.68.186.155 port=7777 t. ! queue ! video/x-raw,format=GRAY8,width=10,height=10 ! mix.
+
+gst-launch-1.0 udpsrc port=6000 ! tee name=t 
+t. ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=2:10:10:1, types=uint8 ! fakesink
+t. ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=1:10:10:1, types=uint8 ! fakesink
+tensor_aggregator frames-in=1 frames-out=2 frames-flush=2 frames-dim=0 !  videoconvert ! videoscale ! video/x-raw,framerate=\(fraction\)0/1,width=20,height=10,format=\(string\)RGB ! \
+
+
+# work
+gst-launch-1.0 udpsrc port=6000 ! tee name=t \
+ t. ! queue ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=2:10:10:1, types=uint8 ! udpsink host=10.68.186.155 port=7700 \
+ t. ! queue !  other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=1:10:10:1, types=uint8 ! udpsink host=10.68.186.155 port=7700
+
+
+gst-launch-1.0 udpsrc port=6000 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=1:20:10:1, types=uint8 ! udpsink host=10.68.186.155 port=7700
+
+# work
+gst-launch-1.0 udpsrc port=6000 ! tee name=t t. ! queue   !  other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=1:20:10:1, types=uint8 ! udpsink host=10.68.186.155 port=7700 t. ! queue  !  other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=1:10:10:1, types=uint8 ! udpsink host=10.68.186.155 port=7700
+
+
+
+gst-launch-1.0 udpsrc port=6000 ! tee name=t t. ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=1:20:10:1, types=uint8 ! tensor_sink t. ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=1:10:10:1, types=uint8 ! tensor_sink
+
+gst-launch-1.0 udpsrc port=6000 ! tee name=t \
+t. ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=2:10:10:1, types=uint8 ! tensor_aggregator frames-in=1 frames-out=2 frames-flush=2 frames-dim=0  ! udpsink host=10.68.186.155 port=7700
+t. ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=1:10:10:1, types=uint8 ! tensor_aggregator frames-in=1 frames-out=2 frames-flush=2 frames-dim=0 !  udpsink host=10.68.186.155 port=7700
+
+
+gst-launch-1.0 udpsrc port=6000 ! tee name=t t. ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=2:10:10:1, types=uint8 ! tensor_aggregator frames-in=1 frames-out=2 frames-flush=2 frames-dim=0  ! udpsink host=10.68.186.155 port=7700 t. ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=1:10:10:1, types=uint8 ! tensor_aggregator frames-in=1 frames-out=2 frames-flush=2 frames-dim=0 !  udpsink host=10.68.186.155 port=7700
+
+
+
+
+
+gst-launch-1.0 udpsrc port=6000 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=2:10:10:1, types=uint8 ! tensor_aggregator frames-in=1 frames-out=2 frames-flush=2 frames-dim=0 ! \
+compositor name=comp ! tensor_sink \
+udpsrc port=6001 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=1:10:10:1, types=uint8 ! tensor_aggregator frames-in=1 frames-out=2 frames-flush=2 frames-dim=0 ! comp.
+
+
+
+
+gst-launch-1.0 udpsrc port=6000 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=2:10:10:1, types=uint8 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_aggregator frames-in=1 frames-out=2 frames-flush=2 frames-dim=0 ! \
+other/tensors,num_tensors=1,dimensions=10:10:4:1,types=uint8 ! tensor_split name=split tensorseg=10:10:1:1,10:10:1:1,10:10:1:1,10:10:1:1 \
+split.src_0 ! queue ! tensor_transform mode=arithmetic option=typecast:float32,add:0.1234,div:0.2323 ! merge.sink_0 \
+split.src_1 ! queue ! tensor_transform mode=arithmetic option=typecast:float32,add:-0.4312,div:0.2111 ! merge.sink_1 \
+split.src_2 ! queue ! tensor_transform mode=arithmetic option=typecast:float32,add:0.466,div:0.188 ! merge.sink_2 \
+split.src_3 ! queue ! tensor_transform mode=arithmetic option=typecast:float32,add:0.1234,div:0.2323 ! merge.sink_3 \
+tensor_merge name=merge mode=linear option=2 ! fakesink
+udpsrc port=6001 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=1:10:10:1, types=uint8 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_aggregator frames-in=1 frames-out=2 frames-flush=2 frames-dim=0 ! \
+other/tensors,num_tensors=1,dimensions=10:10:2:1,types=uint8 ! tensor_split name=split tensorseg=10:10:1:1,10:10:1:1 
+split.src_4 ! queue ! tensor_transform mode=arithmetic option=typecast:float32,add:0.1234,div:0.2323 ! merge.sink_4 \
+split.src_5 ! queue ! tensor_transform mode=arithmetic option=typecast:float32,add:-0.4312,div:0.2111 ! merge.sink_5 \
+
+
+
+gst-launch-1.0  filesrc location=a.jpg ! jpegdec ! videoconvert ! videoscale  ! video/x-raw,format=GRAY8,width=10,height=10 !  tensor_converter ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=1:10:10:1, types=uint8 ! tensor_transform mode=transpose option=1:2:0:3 !
+filesrc location=b.jpg ! jpegdec ! videoconvert ! videoscale  ! video/x-raw,format=RGB,width=10,height=10 !  tensor_converter ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=3:10:10:1, types=uint8 ! tensor_transform mode=transpose option=1:2:0:3 !
+
+
+
+gst-launch-1.0 tensor_merge name=merge mode=linear option=0 ! tensor_sink  \
+    videotestsrc  ! videoconvert ! videoscale ! video/x-raw, width=10, height=10, framerate=30/1,format=RGB ! \
+        tensor_converter ! merge.sink_0 \
+    videotestsrc  ! videoconvert ! videoscale ! video/x-raw, width=10, height=10, framerate=30/1,format=RGBA !  \
+        tensor_converter ! merge.sink_1
+
+
+gst-launch-1.0 tensor_merge name=merge mode=linear option=0 ! udpsink host=10.68.186.155 port=7700  videotestsrc  ! videoconvert ! videoscale ! video/x-raw, width=10, height=10, framerate=30/1,format=RGB ! tensor_converter ! merge.sink_0  videotestsrc  ! videoconvert ! videoscale ! video/x-raw, width=10, height=10, framerate=30/1,format=RGBA !  tensor_converter ! merge.sink_1
+
+gst-launch-1.0 tensor_merge name=merge mode=linear option=0 ! tensor_sink videotestsrc  ! videoconvert ! videoscale ! video/x-raw, width=10, height=10, framerate=30/1,format=RGB ! tensor_converter ! merge.sink_0  videotestsrc  ! videoconvert ! videoscale ! video/x-raw, width=10, height=10, framerate=30/1,format=RGBA !  tensor_converter ! merge.sink_1
+
+
+
+gst-launch-1.0 tensor_merge name=merge mode=linear option=0 ! tensor_sink  \
+    filesrc location=rgb.jpg ! jpegdec ! videoconvert ! videoscale ! video/x-raw, width=10, height=10,format=RGB ! tensor_converter ! merge.sink_0 \
+    filesrc location=rgb.jpg ! jpegdec ! videoconvert ! videoscale ! video/x-raw, width=10, height=10,format=RGBA ! tensor_converter ! merge.sink_1
+
+
+
+gst-launch-1.0 tensor_merge name=merge mode=linear option=0 ! udpsink host=10.68.186.155 port=7700  filesrc location=rgb.jpg ! jpegdec ! videoconvert ! videoscale ! video/x-raw, width=10, height=10,format=RGB ! tensor_converter ! merge.sink_0 filesrc location=rgb.jpg ! jpegdec ! videoconvert ! videoscale ! video/x-raw, width=10, height=10,format=RGBA ! tensor_converter ! merge.sink_1
+
+
+
+#work
+gst-launch-1.0 tensor_merge name=merge mode=linear option=2 ! tensor_sink  \
+    udpsrc port=6000 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=2:10:10:1, types=uint8 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_aggregator frames-in=1 frames-out=2 frames-flush=2 frames-dim=2 ! other/tensor,num_tensors=1,dimensions=10:10:4,types=uint8 ! merge.sink_0 \
+    udpsrc port=6001 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=1:10:10:1, types=uint8 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_aggregator frames-in=1 frames-out=3 frames-flush=3 frames-dim=2 ! other/tensor,num_tensors=1,dimensions=10:10:3,types=uint8 ! merge.sink_1 \
+
+# work
+gst-launch-1.0 tensor_merge name=merge mode=linear option=2 ! tensor_sink  udpsrc port=6000 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=2:10:10:1, types=uint8 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_aggregator frames-in=1 frames-out=2 frames-flush=2 frames-dim=2 ! other/tensor,num_tensors=1,dimensions=10:10:4,types=uint8 ! merge.sink_0 udpsrc port=6001 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=1:10:10:1, types=uint8 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_aggregator frames-in=1 frames-out=3 frames-flush=3 frames-dim=2 ! other/tensor,num_tensors=1,dimensions=10:10:3,types=uint8 ! merge.sink_1 
+
+# work
+gst-launch-1.0 tensor_merge name=merge mode=linear option=2 ! udpsink host=10.68.186.155 port=7700  \
+    udpsrc port=6000 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=2:10:10:1, types=uint8 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_aggregator frames-in=1 frames-out=2 frames-flush=2 frames-dim=2 ! other/tensor,num_tensors=1,dimensions=10:10:4,types=uint8 ! merge.sink_0 \
+    udpsrc port=6001 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=1:10:10:1, types=uint8 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_aggregator frames-in=1 frames-out=3 frames-flush=3 frames-dim=2 ! other/tensor,num_tensors=1,dimensions=10:10:3,types=uint8 ! merge.sink_1 \
+
+
+# work
+gst-launch-1.0 tensor_merge name=merge mode=linear option=2 ! udpsink host=10.68.186.155 port=7700  udpsrc port=6000 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=2:10:10:1, types=uint8 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_aggregator frames-in=1 frames-out=2 frames-flush=2 frames-dim=2 ! other/tensor,num_tensors=1,dimensions=10:10:4,types=uint8 ! merge.sink_0 udpsrc port=6001 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=1:10:10:1, types=uint8 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_aggregator frames-in=1 frames-out=3 frames-flush=3 frames-dim=2 ! other/tensor,num_tensors=1,dimensions=10:10:3,types=uint8 ! merge.sink_1 
+
+
+
+# work
+gst-launch-1.0 tensor_merge name=merge mode=linear option=2 ! tensor_sink \
+  filesrc location=rgb.jpg ! jpegdec ! videoconvert ! videoscale ! video/x-raw, width=10, height=10,format=RGB ! tensor_converter ! other/tensor,num_tensors=1,dimensions=10:10:3,types=uint8 ! merge.sink_0 \
+  filesrc location=rgb.jpg ! jpegdec ! videoconvert ! videoscale ! video/x-raw, width=10, height=10,format=RGB ! tensor_converter ! other/tensor,num_tensors=1,dimensions=10:10:3,types=uint8 ! merge.sink_1 
+
+# work
+gst-launch-1.0 tensor_merge name=merge mode=linear option=2 ! udpsink host=10.68.186.155 port=7700 filesrc location=rgb.jpg ! jpegdec ! videoconvert ! videoscale ! video/x-raw, width=10, height=10,format=RGB ! tensor_converter ! other/tensor,num_tensors=1,dimensions=10:10:3,types=uint8 ! merge.sink_0 filesrc location=rgb.jpg ! jpegdec ! videoconvert ! videoscale ! video/x-raw, width=10, height=10,format=RGB ! tensor_converter ! other/tensor,num_tensors=1,dimensions=10:10:3,types=uint8 ! merge.sink_1 
+
+
+
+gst-launch-1.0 tensor_merge name=merge mode=linear option=2 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=10:10:6:1, types=uint8 ! tensor_sink \
+  filesrc location=rgb.jpg ! jpegdec ! videoconvert ! videoscale ! video/x-raw, width=10, height=10,format=RGB ! tensor_converter ! tensor_transform mode=transpose option=1:2:0:3  ! merge.sink_0 \
+  filesrc location=rgb.jpg ! jpegdec ! videoconvert ! videoscale ! video/x-raw, width=10, height=10,format=RGB ! tensor_converter ! tensor_transform mode=transpose option=1:2:0:3 ! merge.sink_1 
+
+
+gst-launch-1.0 tensor_merge name=merge mode=linear option=2 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=10:10:6:1, types=uint8 ! tensor_sink \
+filesrc location=rgb.jpg ! jpegdec ! videoconvert ! videoscale ! video/x-raw, width=10, height=10,format=RGB ! tensor_converter ! tensor_transform mode=transpose option=1:2:0:3  ! merge.sink_0 \
+filesrc location=rgb.jpg ! jpegdec ! videoconvert ! videoscale ! video/x-raw, width=10, height=10,format=RGB ! tensor_converter ! tensor_transform mode=transpose option=1:2:0:3 ! merge.sink_1 
+
+
+gst-launch-1.0 tensor_merge name=merge mode=linear option=2 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=10:10:6:1, types=uint8 ! tensor_sink \
+filesrc location=rgb.jpg ! jpegdec ! videoconvert ! videoscale ! video/x-raw, width=10, height=10,format=RGB ! tensor_converter ! tensor_transform mode=transpose option=1:2:0:3  ! merge.sink_0 \
+filesrc location=rgb.jpg ! jpegdec ! videoconvert ! videoscale ! video/x-raw, width=10, height=10,format=RGB ! tensor_converter ! tensor_transform mode=transpose option=1:2:0:3 ! merge.sink_1 
+
+gst-launch-1.0 tensor_merge name=merge mode=linear option=2 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=10:10:7:1, types=uint8 ! udpsink host=10.68.186.155 port=7700  udpsrc port=6000 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=2:10:10:1, types=uint8 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_aggregator frames-in=1 frames-out=2 frames-flush=2 frames-dim=2 ! other/tensors,num_tensors=1,dimensions=10:10:4:1,types=uint8 ! merge.sink_0 udpsrc port=6001 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=1:10:10:1, types=uint8 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_aggregator frames-in=1 frames-out=3 frames-flush=3 frames-dim=2 ! other/tensors,num_tensors=1,dimensions=10:10:3:1,types=uint8 ! merge.sink_1 
+
+
+
+gst-launch-1.0 udpsrc port=6000 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=2:10:10:1, types=uint8 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_aggregator frames-in=1 frames-out=2 frames-flush=2 frames-dim=2 ! other/tensors,num_tensors=1,dimensions=10:10:4:1,types=uint8 ! merge.sink_0 \
+udpsrc port=6001 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=1:10:10:1, types=uint8 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_aggregator frames-in=1 frames-out=3 frames-flush=3 frames-dim=2 ! other/tensors,num_tensors=1,dimensions=10:10:3:1,types=uint8 ! merge.sink_1 \
+tensor_merge name=merge mode=linear option=2 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=10:10:7:1, types=uint8 ! udpsink host=10.68.186.155 port=7700  \
+
+
+gst-launch-1.0 udpsrc port=6000 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=2:10:10:1, types=uint8 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_aggregator frames-in=1 frames-out=2 frames-flush=2 frames-dim=2 ! other/tensors,num_tensors=1,dimensions=10:10:4:1,types=uint8 ! merge.sink_0 udpsrc port=6001 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=1:10:10:1, types=uint8 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_aggregator frames-in=1 frames-out=3 frames-flush=3 frames-dim=2 ! other/tensors,num_tensors=1,dimensions=10:10:3:1,types=uint8 ! merge.sink_1 tensor_merge name=merge mode=linear option=2 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=10:10:7:1, types=uint8 ! udpsink host=10.68.186.155 port=7700  
+
+
+
+
+
+
+udpsrc port=6000 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=15:32:32:1,types=float32 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_aggregator frames-in=1 frames-out=4 frames-flush=4 frames-dim=2 ! other/tensors,num_tensors=1,dimensions=32:32:60:1,types=float32 ! merge.sink_0 \
+udpsrc port=6001 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=4:32:32:1,types=float32 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_aggregator frames-in=1 frames-out=1 frames-flush=1 frames-dim=2 ! other/tensors,num_tensors=1,dimensions=32:32:4:1,types=float32 ! merge.sink_1 \
+tensor_merge name=merge mode=linear option=2 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=32:32:64:1,types=float32 ! tensor_filter framework=pytorch model=../../autoencoder_generator/model_segment/vgg16_cifar100/encoder_pos1_inch64_outch1_hw32.torchscript.pt input=32:32:64:1 inputtype=float32 inputname=input output=32:32:1:1 outputtype=float32 accelerator=true:gpu !  udpsink host=10.68.186.155 port=7700
+
+
+
+
+udpsrc port=6000 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=15:32:32:1,types=float32 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_aggregator frames-in=1 frames-out=4 frames-flush=4 frames-dim=2 ! other/tensors,num_tensors=1,dimensions=32:32:60:1,types=float32 ! merge.sink_0 \
+udpsrc port=6001 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=4:32:32:1,types=float32 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_aggregator frames-in=1 frames-out=1 frames-flush=1 frames-dim=2 ! other/tensors,num_tensors=1,dimensions=32:32:4:1,types=float32 ! merge.sink_1 \
+tensor_merge name=merge mode=linear option=2 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=32:32:64:1,types=float32 ! tensor_filter framework=pytorch model=../../autoencoder_generator/model_segment/vgg16_cifar100/encoder_pos1_inch64_outch1_hw32.torchscript.pt input=32:32:64:1 inputtype=float32 inputname=input output=32:32:1:1 outputtype=float32 accelerator=true:gpu !  udpsink host=10.68.186.155 port=7700
+
+
+udpsrc port=6000 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=15:32:32:1,types=float32 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_aggregator frames-in=1 frames-out=4 frames-flush=4 frames-dim=2 ! other/tensors,num_tensors=1,dimensions=32:32:60:1,types=float32 ! merge.sink_0 udpsrc port=6001 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=4:32:32:1,types=float32 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_aggregator frames-in=1 frames-out=1 frames-flush=1 frames-dim=2 ! other/tensors,num_tensors=1,dimensions=32:32:4:1,types=float32 ! merge.sink_1 tensor_merge name=merge mode=linear option=2 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=32:32:64:1,types=float32 ! tensor_filter framework=pytorch model=../../autoencoder_generator/model_segment/vgg16_cifar100/encoder_pos1_inch64_outch1_hw32.torchscript.pt input=32:32:64:1 inputtype=float32 inputname=input output=32:32:1:1 outputtype=float32 accelerator=true:gpu !  udpsink host=10.68.186.155 port=7700
+
+
+
+
+gst-launch-1.0 tensor_merge name=merge mode=linear option=2 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=10:10:6:1, types=uint8 ! tensor_sink \
+filesrc location=rgb.jpg ! jpegdec ! videoconvert ! videoscale ! video/x-raw, width=10, height=10,format=RGB ! tensor_converter ! tensor_transform mode=transpose option=1:2:0:3  ! merge.sink_0 \
+filesrc location=rgb.jpg ! jpegdec ! videoconvert ! videoscale ! video/x-raw, width=10, height=10,format=RGB ! tensor_converter ! tensor_transform mode=transpose option=1:2:0:3 ! merge.sink_1 
+
+
+gst-launch-1.0 udpsrc port=6000 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=2:10:10:1, types=uint8 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_aggregator frames-in=1 frames-out=2 frames-flush=2 frames-dim=0 ! \
+other/tensors,num_tensors=1,dimensions=10:10:4:1,types=uint8 ! tensor_split name=split tensorseg=10:10:1:1,10:10:1:1,10:10:1:1,10:10:1:1 \
+split.src_0 ! queue ! tensor_transform mode=arithmetic option=typecast:float32,add:0.1234,div:0.2323 ! merge.sink_0 \
+split.src_1 ! queue ! tensor_transform mode=arithmetic option=typecast:float32,add:-0.4312,div:0.2111 ! merge.sink_1 \
+split.src_2 ! queue ! tensor_transform mode=arithmetic option=typecast:float32,add:0.466,div:0.188 ! merge.sink_2 \
+split.src_3 ! queue ! tensor_transform mode=arithmetic option=typecast:float32,add:0.1234,div:0.2323 ! merge.sink_3 \
+tensor_merge name=merge mode=linear option=2 ! fakesink
+udpsrc port=6001 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=1:10:10:1, types=uint8 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_aggregator frames-in=1 frames-out=2 frames-flush=2 frames-dim=0 ! \
+other/tensors,num_tensors=1,dimensions=10:10:2:1,types=uint8 ! tensor_split name=split tensorseg=10:10:1:1,10:10:1:1 
+split.src_4 ! queue ! tensor_transform mode=arithmetic option=typecast:float32,add:0.1234,div:0.2323 ! merge.sink_4 \
+split.src_5 ! queue ! tensor_transform mode=arithmetic option=typecast:float32,add:-0.4312,div:0.2111 ! merge.sink_5 \
+
+
+
+gst-launch-1.0 filesrc location=rgb.jpg ! jpegdec ! videoconvert ! videoscale ! video/x-raw, width=10, height=10,format=RGBA ! tensor_converter ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_split name=split tensorseg=10:10:2:1,10:10:2:1 split.src_0 ! queue ! tensor_sink split.src_1 ! queue ! tensor_sink
+
+
+gst-launch-1.0 filesrc location=rgb.jpg ! jpegdec ! videoconvert ! videoscale ! video/x-raw, width=10, height=10,format=RGBA ! tensor_converter ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_split name=split tensorseg=10:10:2:1,10:10:2:1 \
+split.src_0 ! queue ! udpsink host=10.68.186.155 port=7700
+split.src_1 ! queue ! udpsink host=10.68.186.155 port=7700
+
+
+cp printdata.py  $GST_PLUGIN_PATH/python
+
+
+gst-launch-1.0 filesrc location=../../deepstream_nnstreamer/journal_extension/udp_receiver_autoencoder/closed_loop_sender_filtersync_ae/rgb.jpg ! jpegdec ! videoconvert ! videoscale ! video/x-raw, width=10, height=10,format=GRAY8 ! tensor_converter ! udpsink host=10.68.186.155 port=8000
+
+
+gst-launch-1.0 udpsrc port=8000 ! tensor_reschedule frames-in=1 frames-out=1 frames-flush=1 frames-dim=2 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=4:4:4:1, types=uint8 ! tensor_sink
+
+
+
+
+
+gst-launch-1.0 udpsrc port=8000 ! datareschedule single-frame-size=32 accumulate-frame-number=3 !  udpsink host=10.68.186.155 port=8888
+
+
+
+gst-launch-1.0 filesrc location=../../../deepstream_nnstreamer/journal_extension/udp_receiver_autoencoder/closed_loop_sender_filtersync_ae/rgb.jpg ! jpegdec ! videoconvert ! videoscale ! video/x-raw, width=4, height=8,format=GRAY8 ! tensor_converter ! datareschedule single-frame-size=32 accumulate-frame-number=1 !  udpsink host=10.68.186.155 port=8888
+
+
+gst-launch-1.0 filesrc location=../../../deepstream_nnstreamer/journal_extension/udp_receiver_autoencoder/closed_loop_sender_filtersync_ae/rgb.jpg ! jpegdec ! videoconvert ! videoscale ! video/x-raw, width=4, height=8,format=GRAY8 ! tensor_converter ! addhead header-value=3 idx-in-tensor=1 ! datareschedule single-frame-size=34 accumulate-frame-number=1 !  udpsink host=10.68.186.155 port=8888
+
+
+gst-launch-1.0 filesrc location=../../../deepstream_nnstreamer/journal_extension/udp_receiver_autoencoder/closed_loop_sender_filtersync_ae/rgb.jpg ! jpegdec ! videoconvert ! videoscale ! video/x-raw, width=4, height=8,format=GRAY8 ! tensor_converter ! addhead header-value=3 idx-in-tensor=1 ! datareschedule single-frame-size=34 accumulate-frame-number=1 !  udpsink host=10.68.186.155 port=8888
+
+
+# agx
+gst-launch-1.0 filesrc location=../../deepstream_nnstreamer/journal_extension/udp_receiver_autoencoder/closed_loop_sender_filtersync_ae/rgb.jpg ! jpegdec ! videoconvert ! videoscale ! video/x-raw, width=4, height=8,format=GRAY8 ! tensor_converter ! addhead header-value=3 idx-in-tensor=1 !  udpsink host=10.68.187.36 port=8000
+
+
+
+
+# orinnano1
+gst-launch-1.0 udpsrc port=8000 ! datareschedule single-frame-size=34 accumulate-frame-number=3 !  udpsink host=10.68.186.155 port=8888
+
+gst-launch-1.0 udpsrc port=8000 ! datareschedule single-frame-size=34 accumulate-frame-number=2 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=4:4:4:1, types=uint8 ! tensor_sink
+
+
+gst-launch-1.0 udpsrc port=8000 ! datareschedule single-frame-size=34 accumulate-frame-number=2 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=64:32:32:1, types=float32 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_filter framework=pytorch model=../../autoencoder_generator/model_segment/vgg16_cifar100/encoder_pos1_inch64_outch1_hw32.torchscript.pt input=32:32:64:1 inputtype=float32 inputname=input output=32:32:1:1 outputtype=float32 accelerator=true:gpu ! udpsink host=10.68.186.155 port=6001
+
+
+gst-launch-1.0 udpsrc port=8000 ! datareschedule single-frame-size=34 accumulate-frame-number=3 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=6:4:4:1, types=uint8 ! tensor_transform mode=transpose option=1:2:0:3 ! udpsink host=10.68.186.155 port=6001
+
+
+
+udpsrc port=6000 !  other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=3:4:4:1,types=uint8 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_aggregator frames-in=1 frames-out=4 frames-flush=4 frames-dim=2 ! other/tensors,num_tensors=1,dimensions=32:32:60:1,types=float32 ! 
+
+
+gst-launch-1.0 filesrc location=../../deepstream_nnstreamer/journal_extension/udp_receiver_autoencoder/closed_loop_sender_filtersync_ae/rgb.jpg ! jpegdec ! videoconvert ! videoscale ! video/x-raw, width=10, height=10,format=RGB ! tensor_converter ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=3:10:10:1,types=uint8 ! tensor_transform mode=transpose option=1:2:0:3 ! printdata ! tensor_sink
+
+
+
+
+udpsrc port=6000 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=15:32:32:1,types=uint8 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_aggregator frames-in=1 frames-out=4 frames-flush=4 frames-dim=2 ! other/tensors,num_tensors=1,dimensions=32:32:60:1,types=float32 ! merge.sink_0 udpsrc port=6001 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=4:32:32:1,types=float32 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_aggregator frames-in=1 frames-out=1 frames-flush=1 frames-dim=2 ! other/tensors,num_tensors=1,dimensions=32:32:4:1,types=float32 ! merge.sink_1 tensor_merge name=merge mode=linear option=2 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=32:32:64:1,types=float32 ! tensor_filter framework=pytorch model=../../autoencoder_generator/model_segment/vgg16_cifar100/encoder_pos1_inch64_outch1_hw32.torchscript.pt input=32:32:64:1 inputtype=float32 inputname=input output=32:32:1:1 outputtype=float32 accelerator=true:gpu !  udpsink host=10.68.186.155 port=7700
+
+
+gst-launch-1.0 udpsrc port=6000 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=3:10:10:1,types=uint8 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_aggregator frames-in=1 frames-out=4 frames-flush=4 frames-dim=2 ! 
+
+
+udpsrc port={self.jetson_large_UDP_packet_receive_port} ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions={self.input_large_UDP_packet_channel}:{self.height}:{self.width}:1,types=float32 ! tensor_transform mode=transpose option=1:2:0:3 ! tensor_aggregator frames-in=1 frames-out={self.input_large_UDP_packet_num} frames-flush={self.input_large_UDP_packet_num} frames-dim=2 ! other/tensors,num_tensors=1,dimensions={self.height}:{self.width}:{sum_input_large_UDP_packet_channel}:1,types=float32 ! merge.sink_0 
+
+
+# compare datareschedule and tensor_aggregator
+# use datareschedule
+gst-launch-1.0 udpsrc port=8000 ! datareschedule single-frame-size=102 accumulate-frame-number=3 ! printdata ! fakesink
+
+# use tensor_aggregator
+gst-launch-1.0 udpsrc port=8000 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=10:10:1:1,types=uint8 ! tensor_aggregator frames-in=1 frames-out=3 frames-flush=3 frames-dim=2 ! printdata ! fakesink
+
+
+
+
+
+
+
+

@@ -23,7 +23,12 @@ struct _GstDataReschedule
 
   GstPad *sinkpad, *srcpad;
 
+  guint single_frame_size;       /**< number of frames in input buffer */
+  guint accumulate_frame_number; /**< number of frames in output buffer */
+
   gboolean silent;
+
+  GstAdapter *adapter;
 };
 
 struct _GstDataRescheduleClass
