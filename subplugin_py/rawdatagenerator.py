@@ -53,6 +53,14 @@ class Rawdatagenerator(GstBase.BaseSrc):
             1,                 # Default value
             GObject.ParamFlags.READWRITE  # Property is readable and writable
         ),
+        "ifseq": (
+            GObject.TYPE_UINT,  # Property type (unsigned int)
+            "if_sequential",     # Property name
+            "if generate from 1 to 255 iter",  # Description
+            0, 1,             # Allowed range 
+            0,                 # Default value
+            GObject.ParamFlags.READWRITE  # Property is readable and writable
+        ),
     }
 
     def __init__(self):
@@ -62,6 +70,7 @@ class Rawdatagenerator(GstBase.BaseSrc):
         self.header_value = 3
         self.idx_in_tensor = 1
         self.datasize = 1
+        self.ifseq = 0
         
         self.data_sent = False
         self.set_live(True)
@@ -74,6 +83,8 @@ class Rawdatagenerator(GstBase.BaseSrc):
             return self.idx_in_tensor
         elif prop.name == "datasize":
             return self.datasize
+        elif prop.name == "ifseq":
+            return self.ifseq
         else:
             raise AttributeError("Unknown property: %s" % prop.name)
        
@@ -85,6 +96,8 @@ class Rawdatagenerator(GstBase.BaseSrc):
             self.idx_in_tensor = value
         elif prop.name == "datasize":
             self.datasize = value
+        elif prop.name == "ifseq":
+            self.ifseq = value
         else:
             raise AttributeError("Unknown property: %s" % prop.name)
         
@@ -98,7 +111,10 @@ class Rawdatagenerator(GstBase.BaseSrc):
                 data=data+struct.pack('B', self.idx_in_tensor)
             for i in range(self.datasize):
                 # data=data+struct.pack('B', i%3)
-                data=data+struct.pack('B', self.idx_in_tensor)
+                if self.ifseq == 1:
+                    data=data+struct.pack('B', i%255)
+                else:
+                    data=data+struct.pack('B', self.idx_in_tensor)
 
             buffer = Gst.Buffer.new_allocate(None, len(data), None)
             buffer.fill(0, data)   
