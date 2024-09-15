@@ -45,6 +45,14 @@ class Rawdatagenerator(GstBase.BaseSrc):
             1,                 # Default value
             GObject.ParamFlags.READWRITE  # Property is readable and writable
         ),
+        "datasize": (
+            GObject.TYPE_UINT,  # Property type (unsigned int)
+            "data size",     # Property name
+            "how many byte to generate",  # Description
+            1, 100000000,             # Allowed range 
+            1,                 # Default value
+            GObject.ParamFlags.READWRITE  # Property is readable and writable
+        ),
     }
 
     def __init__(self):
@@ -53,6 +61,7 @@ class Rawdatagenerator(GstBase.BaseSrc):
         # Initialize the property
         self.header_value = 3
         self.idx_in_tensor = 1
+        self.datasize = 1
         
         self.data_sent = False
         self.set_live(True)
@@ -63,6 +72,8 @@ class Rawdatagenerator(GstBase.BaseSrc):
             return self.header_value
         elif prop.name == "idx-in-tensor":
             return self.idx_in_tensor
+        elif prop.name == "datasize":
+            return self.datasize
         else:
             raise AttributeError("Unknown property: %s" % prop.name)
        
@@ -72,6 +83,8 @@ class Rawdatagenerator(GstBase.BaseSrc):
             self.header_value = value
         elif prop.name == "idx-in-tensor":
             self.idx_in_tensor = value
+        elif prop.name == "datasize":
+            self.datasize = value
         else:
             raise AttributeError("Unknown property: %s" % prop.name)
         
@@ -83,7 +96,7 @@ class Rawdatagenerator(GstBase.BaseSrc):
             if self.header_value != 0:
                 data=data+struct.pack('B', self.header_value)
                 data=data+struct.pack('B', self.idx_in_tensor)
-            for i in range(100):
+            for i in range(self.datasize):
                 # data=data+struct.pack('B', i%3)
                 data=data+struct.pack('B', self.idx_in_tensor)
 
