@@ -31,9 +31,35 @@ class Printdata(GstBase.BaseTransform):
     )
     __gsttemplates__ = (ANY_SRC_TEMPLATE, ANY_SINK_TEMPLATE)
 
+    __gproperties__ = {
+        "headtail": (
+            GObject.TYPE_UINT,  # Property type (unsigned int)
+            "headtail",     # Property name
+            "how many byte to print at head and tail",  # Description
+            0, 255,             # Allowed range (0-255 because it's a byte)
+            20,                 # Default value
+            GObject.ParamFlags.READWRITE  # Property is readable and writable
+        ),
+    }
+
     def __init__(self):
         super(Printdata, self).__init__()
         print("Initialized printdata plugin")
+        self.headtail=20
+
+    def do_get_property(self, prop):
+        if prop.name == "headtail":
+            return self.headtail
+        else:
+            raise AttributeError("Unknown property: %s" % prop.name)
+       
+
+    def do_set_property(self, prop, value):
+        if prop.name == "headtail":
+            self.headtail = value
+        else:
+            raise AttributeError("Unknown property: %s" % prop.name)
+
 
     # This method is called when the buffer is being processed
     def do_transform_ip(self, buf):
@@ -52,7 +78,11 @@ class Printdata(GstBase.BaseTransform):
             unpacked_byte = struct.unpack('B', bytes([i]))  # 'i' must be passed as a single byte
             unpacked_byte_list.append(unpacked_byte[0])
         # print("Buffer data:", data[:])
-        print("Buffer data:", unpacked_byte_list)
+        if self.headtail > 0:
+            print("first 20 Buffer data:", unpacked_byte_list[0:self.headtail])
+            print("last 20 Buffer data:", unpacked_byte_list[-self.headtail:])
+        else:
+            print("Buffer data:", unpacked_byte_list[:])
 
         # Unmap the buffer when done
         buf.unmap(map_info)
