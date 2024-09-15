@@ -77,6 +77,7 @@ class Splitaddhead(GstBase.BaseTransform):
 
     # This method is called when the buffer is being processed
     def do_transform_ip(self, buf):
+
         print("Received buffer at PTS:", buf.pts)
 
         # Map the buffer for reading
@@ -88,12 +89,12 @@ class Splitaddhead(GstBase.BaseTransform):
         # Print the buffer data (first 20 bytes for example)
         data = map_info.data
         # print("old Buffer data:", data[:])
-        print("unpack data:")
-        unpacked_byte_list=[]
-        for i in data:
-            unpacked_byte = struct.unpack('B', bytes([i]))  # 'i' must be passed as a single byte
-            unpacked_byte_list.append(unpacked_byte[0])
-        print("Buffer data:", unpacked_byte_list[:])
+        # print("unpack data:")
+        # unpacked_byte_list=[]
+        # for i in data:
+        #     unpacked_byte = struct.unpack('B', bytes([i]))  # 'i' must be passed as a single byte
+        #     unpacked_byte_list.append(unpacked_byte[0])
+        # print("Buffer data:", unpacked_byte_list[:])
 
         # Unmap the buffer when done
         buf.unmap(map_info)
@@ -105,23 +106,16 @@ class Splitaddhead(GstBase.BaseTransform):
             pack_data_segment=data[(indx-1)*self.single_frame_size : indx*self.single_frame_size]
             new_data = pack_accumulate_frame_number + pack_indx + pack_data_segment
             
-            if indx != self.accumulate_frame_number:
-                new_buffer = Gst.Buffer.new_allocate(None, len(new_data), None)
-                success, map_info_new = new_buffer.map(Gst.MapFlags.WRITE)
-                if not success:
-                    print("Failed to map buffer for new buffer")
-                    return Gst.FlowReturn.ERROR
-                new_buffer.fill(0, new_data)
-                new_buffer.unmap(map_info_new)
-                self.srcpad.push(new_buffer)
-            else:
-                new_memory= Gst.Memory.new_wrapped(0, new_data, len(new_data), 0, None, None)
-                buf.replace_all_memory(new_memory)
-                success, map_info = buf.map(Gst.MapFlags.READ)
-                if success:
-                    buf.unmap(map_info)
-
-        return Gst.FlowReturn.OK  # Pass the buffer along the pipeline
+            new_buffer = Gst.Buffer.new_allocate(None, len(new_data), None)
+            success, map_info_new = new_buffer.map(Gst.MapFlags.WRITE)
+            if not success:
+                print("Failed to map buffer for new buffer")
+                return Gst.FlowReturn.ERROR
+            new_buffer.fill(0, new_data)
+            new_buffer.unmap(map_info_new)
+            self.srcpad.push(new_buffer)
+        
+        return Gst.FlowReturn.CUSTOM_SUCCESS # Pass the buffer along the pipeline
 
 # Register the element as a GStreamer plugin
 GObject.type_register(Splitaddhead)
