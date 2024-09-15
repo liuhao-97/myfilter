@@ -112,7 +112,7 @@ class Rawdatagenerator(GstBase.BaseSrc):
             for i in range(self.datasize):
                 # data=data+struct.pack('B', i%3)
                 if self.ifseq == 1:
-                    data=data+struct.pack('B', i%255)
+                    data=data+struct.pack('B', (self.idx_in_tensor +i)%255)
                 else:
                     data=data+struct.pack('B', self.idx_in_tensor)
 
