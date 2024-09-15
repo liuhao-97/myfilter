@@ -100,15 +100,23 @@ class Addhead(GstBase.BaseTransform):
         new_data = all_num + indx + data[:]
         # print(new_data)
         
-        new_memory= Gst.Memory.new_wrapped(0, new_data, len(new_data), 0, None, None)
-        buf.replace_all_memory(new_memory)
-        success, map_info = buf.map(Gst.MapFlags.READ)
-        if success:
-            print("New Buffer data:", map_info.data[:])
-            buf.unmap(map_info)
+        # new_memory= Gst.Memory.new_wrapped(0, new_data, len(new_data), 0, None, None)
+        # buf.replace_all_memory(new_memory)
+        # success, map_info = buf.map(Gst.MapFlags.READ)
+        # if success:
+        #     print("New Buffer data:", map_info.data[:])
+        #     buf.unmap(map_info)
 
+        new_buffer = Gst.Buffer.new_allocate(None, len(new_data), None)
+        success, map_info_new = new_buffer.map(Gst.MapFlags.WRITE)
+        if not success:
+            print("Failed to map buffer for new buffer")
+            return Gst.FlowReturn.ERROR
+        new_buffer.fill(0, new_data)
+        new_buffer.unmap(map_info_new)
+        self.srcpad.push(new_buffer)
 
-        return Gst.FlowReturn.OK  # Pass the buffer along the pipeline
+        return Gst.FlowReturn.CUSTOM_SUCCESS  # Pass the buffer along the pipeline
 
 # Register the element as a GStreamer plugin
 GObject.type_register(Addhead)
