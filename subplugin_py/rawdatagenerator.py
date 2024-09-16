@@ -45,6 +45,14 @@ class Rawdatagenerator(GstBase.BaseSrc):
             1,                 # Default value
             GObject.ParamFlags.READWRITE  # Property is readable and writable
         ),
+        "start": (
+            GObject.TYPE_UINT,  # Property type (unsigned int)
+            "start",     # Property name
+            "data generate start from",  # Description
+            0, 255,             # Allowed range (0-255 because it's a byte)
+            0,                 # Default value
+            GObject.ParamFlags.READWRITE  # Property is readable and writable
+        ),
         "datasize": (
             GObject.TYPE_UINT,  # Property type (unsigned int)
             "data size",     # Property name
@@ -71,6 +79,7 @@ class Rawdatagenerator(GstBase.BaseSrc):
         self.idx_in_tensor = 1
         self.datasize = 1
         self.ifseq = 0
+        self.start = 0
         
         self.data_sent = False
         self.set_live(True)
@@ -85,6 +94,8 @@ class Rawdatagenerator(GstBase.BaseSrc):
             return self.datasize
         elif prop.name == "ifseq":
             return self.ifseq
+        elif prop.name == "start":
+            return self.start
         else:
             raise AttributeError("Unknown property: %s" % prop.name)
        
@@ -98,6 +109,8 @@ class Rawdatagenerator(GstBase.BaseSrc):
             self.datasize = value
         elif prop.name == "ifseq":
             self.ifseq = value
+        elif prop.name == "start":
+            self.start = value
         else:
             raise AttributeError("Unknown property: %s" % prop.name)
         
@@ -112,9 +125,9 @@ class Rawdatagenerator(GstBase.BaseSrc):
             for i in range(self.datasize):
                 # data=data+struct.pack('B', i%3)
                 if self.ifseq == 1:
-                    data=data+struct.pack('B', (self.idx_in_tensor +i)%255)
+                    data=data+struct.pack('B', (self.start +i)%255)
                 else:
-                    data=data+struct.pack('B', self.idx_in_tensor)
+                    data=data+struct.pack('B', self.start)
 
             buffer = Gst.Buffer.new_allocate(None, len(data), None)
             buffer.fill(0, data)   
