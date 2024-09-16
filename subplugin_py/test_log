@@ -443,3 +443,108 @@ cp printdata.py  $GST_PLUGIN_PATH/python
 
 
 gst-launch-1.0 filesrc location=../../deepstream_nnstreamer/journal_extension/udp_receiver_autoencoder/closed_loop_sender_filtersync_ae/rgb.jpg ! jpegdec ! videoconvert ! videoscale ! video/x-raw, width=10, height=10,format=GRAY8 ! tensor_converter ! udpsink host=10.68.186.155 port=8000
+
+
+
+# no split
+gst-launch-1.0 rawdatagenerator datasize=100  header-value=0 idx-in-tensor=25 ifseq=1 ! printdata headtail=0  ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=5:5:4:1, types=uint8 ! udpsink host=10.68.186.155 port=8003
+
+
+# split to different port
+gst-launch-1.0 rawdatagenerator datasize=100  header-value=0 idx-in-tensor=25 ifseq=1 ! printdata headtail=0  ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=5:5:4:1, types=uint8 ! tensor_split name=split tensorseg=5:5:1:1,5:5:1:1,5:5:1:1,5:5:1:1 split.src_0 ! queue ! udpsink host=10.68.186.155 port=8000 split.src_1 ! queue ! udpsink host=10.68.186.155 port=8001 split.src_2 ! queue ! udpsink host=10.68.186.155 port=8002 split.src_3 ! queue !  udpsink host=10.68.186.155 port=8003
+
+# split to same port
+gst-launch-1.0 rawdatagenerator datasize=100  header-value=0 idx-in-tensor=25 ifseq=1 ! printdata headtail=0  ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=5:5:4:1, types=uint8 ! tensor_split name=split tensorseg=5:5:1:1,5:5:1:1,5:5:1:1,5:5:1:1 split.src_0 ! queue ! udpsink host=10.68.186.155 port=8000 split.src_1 ! queue ! udpsink host=10.68.186.155 port=8000 split.src_2 ! queue ! udpsink host=10.68.186.155 port=8000  split.src_3 ! queue !  udpsink host=10.68.186.155 port=8000 
+
+# split to same port with add head
+gst-launch-1.0 rawdatagenerator datasize=100  header-value=0 idx-in-tensor=25 ifseq=1 ! printdata headtail=0  ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=5:5:4:1, types=uint8 ! tensor_split name=split tensorseg=5:5:1:1,5:5:1:1,5:5:1:1,5:5:1:1 split.src_0 ! queue ! addhead header-value=4 idx-in-tensor=1 ! udpsink host=10.68.186.155 port=8000 split.src_1 ! queue !  addhead header-value=4 idx-in-tensor=2 ! udpsink host=10.68.186.155 port=8000 split.src_2 ! queue ! addhead header-value=4 idx-in-tensor=3 ! udpsink host=10.68.186.155 port=8000  split.src_3 ! queue ! addhead header-value=4 idx-in-tensor=4 !  udpsink host=10.68.186.155 port=8000 
+
+
+
+# split to same port with add head works fix addhead bug
+gst-launch-1.0 rawdatagenerator datasize=100  header-value=0 idx-in-tensor=25 ifseq=1 ! printdata headtail=0  ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=5:5:4:1, types=uint8 ! tensor_split name=split tensorseg=5:5:1:1,5:5:1:1,5:5:1:1,5:5:1:1 split.src_0 ! queue ! addhead header-value=4 idx-in-tensor=1 ! udpsink host=10.68.187.212 port=8000 split.src_1 ! queue !  addhead header-value=4 idx-in-tensor=2 ! udpsink host=10.68.187.212 port=8000 split.src_2 ! queue ! addhead header-value=4 idx-in-tensor=3 ! udpsink host=10.68.187.212 port=8000  split.src_3 ! queue ! addhead header-value=4 idx-in-tensor=4 !  udpsink host=10.68.187.212 port=8000 
+
+
+
+
+gst-launch-1.0 rawdatagenerator datasize=100  header-value=0 idx-in-tensor=25 ifseq=1 ! printdata headtail=0 !  splitaddhead accumulate-frame-number=2 single-frame-size=50 !  printdata headtail=0 ! udpsink host=10.68.186.155 port=8000
+
+
+
+
+gst-launch-1.0 rawdatagenerator datasize=100  header-value=0 idx-in-tensor=25 ifseq=1  ! printdata headtail=0   ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=5:5:4:1, types=uint8 ! printdata headtail=0 ! fakesink
+
+
+
+
+gst-launch-1.0 rawdatagenerator datasize=100  header-value=0 idx-in-tensor=25 ifseq=1  ! printdata headtail=0   ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=5:5:1:1, types=float32 !  tensor_transform mode=transpose option=1:2:0:3  ! printdata headtail=0 ! fakesink
+
+
+
+
+
+
+
+gst-launch-1.0 rawdatagenerator datasize=100  header-value=0 idx-in-tensor=25 ifseq=1 ! printdata headtail=0 !  splitaddhead accumulate-frame-number=4 single-frame-size=25 !  printdata headtail=0 ! udpsink host=10.68.186.155 port=8000
+
+
+
+gst-launch-1.0 rawdatagenerator datasize=100  header-value=0 idx-in-tensor=25 ifseq=1 ! printdata headtail=0 !  splitaddhead accumulate-frame-number=4 single-frame-size=25 !  printdata headtail=0 ! udpsink host=10.68.187.212 port=8000
+
+
+
+
+
+
+
+gst-launch-1.0 rawdatagenerator datasize=262144  header-value=0 idx-in-tensor=25 ifseq=1 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=32:32:64:1, types=float32 ! tensor_split name=split tensorseg=32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:4:1 split.src_0 ! queue ! addhead header-value=5 idx-in-tensor=1 ! udpsink host=10.68.187.212 port=8000 split.src_1 ! queue !  addhead header-value=5 idx-in-tensor=2 ! udpsink host=10.68.187.212 port=8000 split.src_2 ! queue ! addhead header-value=5 idx-in-tensor=3 ! udpsink host=10.68.187.212 port=8000  split.src_3 ! queue ! addhead header-value=5 idx-in-tensor=4 !  udpsink host=10.68.187.212 port=8000 split.src_4 ! queue ! addhead header-value=5 idx-in-tensor=5 !  udpsink host=10.68.187.212 port=8000 
+
+
+gst-launch-1.0 rawdatagenerator datasize=262144  header-value=0 idx-in-tensor=25 ifseq=1 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=32:32:64:1, types=float32 ! tensor_split name=split tensorseg=32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:4:1 split.src_0 ! queue ! addhead header-value=5 idx-in-tensor=1 ! datacheck datasize=262144  header-value=5 idx-in-tensor=1 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=16384 ! udpsink host=10.68.186.155 port=8000 split.src_1 ! queue !  addhead header-value=5 idx-in-tensor=2 ! datacheck datasize=262144  header-value=5 idx-in-tensor=2 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=16384 ! udpsink host=10.68.186.155 port=8000 split.src_2 ! queue ! addhead header-value=5 idx-in-tensor=3 ! datacheck datasize=262144  header-value=5 idx-in-tensor=3 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=16384 ! udpsink host=10.68.186.155 port=8000  split.src_3 ! queue ! addhead header-value=5 idx-in-tensor=4 ! datacheck datasize=262144  header-value=5 idx-in-tensor=4 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=16384 ! udpsink host=10.68.186.155 port=8000 split.src_4 ! queue ! addhead header-value=5 idx-in-tensor=5 ! datacheck datasize=262144  header-value=5 idx-in-tensor=5 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=16384 ! udpsink host=10.68.187.212 port=8000 
+
+
+gst-launch-1.0 rawdatagenerator datasize=400  header-value=0 idx-in-tensor=25 ifseq=1 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=5:5:4:1, types=float32 ! tensor_split name=split tensorseg=5:5:3:1,5:5:1:1 split.src_0 ! queue ! addhead header-value=5 idx-in-tensor=1 !   udpsink host=10.68.187.212 port=8000 split.src_1 ! queue !  addhead header-value=5 idx-in-tensor=2 !   udpsink host=10.68.187.212 port=8000 
+
+
+
+gst-launch-1.0 rawdatagenerator datasize=200  header-value=0 idx-in-tensor=1 ifseq=1 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=5:5:2:1, types=float32 ! tensor_split name=split tensorseg=5:5:1:1,5:5:1:1 
+split.src_0 ! queue ! addhead header-value=2 idx-in-tensor=1 ! datacheck datasize=200  header-value=2 idx-in-tensor=1 ifseq=1 large-tensor-datasize=100 ! udpsink host=10.68.187.212 port=8000  
+split.src_1 ! queue !  addhead header-value=2 idx-in-tensor=2 !  datacheck datasize=200  header-value=2 idx-in-tensor=2 ifseq=1 large-tensor-datasize=100  ! udpsink host=10.68.187.212 port=8000 
+
+
+
+
+
+
+gst-launch-1.0 rawdatagenerator datasize=1048576  header-value=0 idx-in-tensor=25 ifseq=1 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=32:32:256:1, types=float32 ! tensor_split name=split tensorseg=32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:1:1 
+split.src_0 ! queue ! addhead header-value=18 idx-in-tensor=1 ! datacheck datasize=1048576  header-value=18 idx-in-tensor=1 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=4096 ! udpsink host=10.68.186.155 port=8000 
+split.src_1 ! queue ! addhead header-value=18 idx-in-tensor=2 ! datacheck datasize=1048576  header-value=18 idx-in-tensor=2 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=4096 ! udpsink host=10.68.186.155 port=8000 
+split.src_2 ! queue ! addhead header-value=18 idx-in-tensor=3 ! datacheck datasize=1048576  header-value=18 idx-in-tensor=3 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=4096 ! udpsink host=10.68.186.155 port=8000 
+split.src_3 ! queue ! addhead header-value=18 idx-in-tensor=4 ! datacheck datasize=1048576  header-value=18 idx-in-tensor=4 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=4096 ! udpsink host=10.68.186.155 port=8000 
+split.src_4 ! queue ! addhead header-value=18 idx-in-tensor=5 ! datacheck datasize=1048576  header-value=18 idx-in-tensor=5 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=4096 ! udpsink host=10.68.186.155 port=8000 
+split.src_5 ! queue ! addhead header-value=18 idx-in-tensor=6 ! datacheck datasize=1048576  header-value=18 idx-in-tensor=6 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=4096 ! udpsink host=10.68.186.155 port=8000 
+split.src_6 ! queue ! addhead header-value=18 idx-in-tensor=7 ! datacheck datasize=1048576  header-value=18 idx-in-tensor=7 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=4096 ! udpsink host=10.68.186.155 port=8000 
+split.src_7 ! queue ! addhead header-value=18 idx-in-tensor=8 ! datacheck datasize=1048576  header-value=18 idx-in-tensor=8 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=4096 ! udpsink host=10.68.186.155 port=8000 
+split.src_8 ! queue ! addhead header-value=18 idx-in-tensor=9 ! datacheck datasize=1048576  header-value=18 idx-in-tensor=9 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=4096 ! udpsink host=10.68.186.155 port=8000 
+split.src_9 ! queue ! addhead header-value=18 idx-in-tensor=10 ! datacheck datasize=1048576  header-value=18 idx-in-tensor=10 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=4096 ! udpsink host=10.68.186.155 port=8000 
+split.src_10 ! queue ! addhead header-value=18 idx-in-tensor=11 ! datacheck datasize=1048576  header-value=18 idx-in-tensor=11 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=4096 ! udpsink host=10.68.186.155 port=8000 
+split.src_11 ! queue ! addhead header-value=18 idx-in-tensor=12 ! datacheck datasize=1048576  header-value=18 idx-in-tensor=12 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=4096 ! udpsink host=10.68.186.155 port=8000 
+split.src_12 ! queue ! addhead header-value=18 idx-in-tensor=13 ! datacheck datasize=1048576  header-value=18 idx-in-tensor=13 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=4096 ! udpsink host=10.68.186.155 port=8000 
+split.src_13 ! queue ! addhead header-value=18 idx-in-tensor=14 ! datacheck datasize=1048576  header-value=18 idx-in-tensor=14 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=4096 ! udpsink host=10.68.186.155 port=8000 
+split.src_14 ! queue ! addhead header-value=18 idx-in-tensor=15 ! datacheck datasize=1048576  header-value=18 idx-in-tensor=15 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=4096 ! udpsink host=10.68.186.155 port=8000 
+split.src_15 ! queue ! addhead header-value=18 idx-in-tensor=16 ! datacheck datasize=1048576  header-value=18 idx-in-tensor=16 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=4096 ! udpsink host=10.68.186.155 port=8000 
+split.src_16 ! queue ! addhead header-value=18 idx-in-tensor=17 ! datacheck datasize=1048576  header-value=18 idx-in-tensor=17 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=4096 ! udpsink host=10.68.186.155 port=8000 
+split.src_17 ! queue ! addhead header-value=18 idx-in-tensor=18 ! datacheck datasize=1048576  header-value=18 idx-in-tensor=18 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=4096 ! udpsink host=10.68.186.155 port=8000 
+
+
+
+
+gst-launch-1.0 rawdatagenerator datasize=1048576  header-value=0 idx-in-tensor=25 ifseq=1 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=32:32:256:1, types=float32 ! tensor_split name=split tensorseg=32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:1:1 split.src_0 ! queue ! addhead header-value=18 idx-in-tensor=1 ! datacheck datasize=1048576  header-value=18 idx-in-tensor=1 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=4096 ! udpsink host=10.68.186.155 port=8000 split.src_1 ! queue ! addhead header-value=18 idx-in-tensor=2 ! datacheck datasize=1048576  header-value=18 idx-in-tensor=2 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=4096 ! udpsink host=10.68.186.155 port=8000 split.src_2 ! queue ! addhead header-value=18 idx-in-tensor=3 ! datacheck datasize=1048576  header-value=18 idx-in-tensor=3 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=4096 ! udpsink host=10.68.186.155 port=8000 split.src_3 ! queue ! addhead header-value=18 idx-in-tensor=4 ! datacheck datasize=1048576  header-value=18 idx-in-tensor=4 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=4096 ! udpsink host=10.68.186.155 port=8000 split.src_4 ! queue ! addhead header-value=18 idx-in-tensor=5 ! datacheck datasize=1048576  header-value=18 idx-in-tensor=5 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=4096 ! udpsink host=10.68.186.155 port=8000 split.src_5 ! queue ! addhead header-value=18 idx-in-tensor=6 ! datacheck datasize=1048576  header-value=18 idx-in-tensor=6 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=4096 ! udpsink host=10.68.186.155 port=8000 split.src_6 ! queue ! addhead header-value=18 idx-in-tensor=7 ! datacheck datasize=1048576  header-value=18 idx-in-tensor=7 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=4096 ! udpsink host=10.68.186.155 port=8000 split.src_7 ! queue ! addhead header-value=18 idx-in-tensor=8 ! datacheck datasize=1048576  header-value=18 idx-in-tensor=8 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=4096 ! udpsink host=10.68.186.155 port=8000 split.src_8 ! queue ! addhead header-value=18 idx-in-tensor=9 ! datacheck datasize=1048576  header-value=18 idx-in-tensor=9 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=4096 ! udpsink host=10.68.186.155 port=8000 split.src_9 ! queue ! addhead header-value=18 idx-in-tensor=10 ! datacheck datasize=1048576  header-value=18 idx-in-tensor=10 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=4096 ! udpsink host=10.68.186.155 port=8000 split.src_10 ! queue ! addhead header-value=18 idx-in-tensor=11 ! datacheck datasize=1048576  header-value=18 idx-in-tensor=11 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=4096 ! udpsink host=10.68.186.155 port=8000 split.src_11 ! queue ! addhead header-value=18 idx-in-tensor=12 ! datacheck datasize=1048576  header-value=18 idx-in-tensor=12 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=4096 ! udpsink host=10.68.186.155 port=8000 split.src_12 ! queue ! addhead header-value=18 idx-in-tensor=13 ! datacheck datasize=1048576  header-value=18 idx-in-tensor=13 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=4096 ! udpsink host=10.68.186.155 port=8000 split.src_13 ! queue ! addhead header-value=18 idx-in-tensor=14 ! datacheck datasize=1048576  header-value=18 idx-in-tensor=14 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=4096 ! udpsink host=10.68.186.155 port=8000 split.src_14 ! queue ! addhead header-value=18 idx-in-tensor=15 ! datacheck datasize=1048576  header-value=18 idx-in-tensor=15 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=4096 ! udpsink host=10.68.186.155 port=8000 split.src_15 ! queue ! addhead header-value=18 idx-in-tensor=16 ! datacheck datasize=1048576  header-value=18 idx-in-tensor=16 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=4096 ! udpsink host=10.68.186.155 port=8000 split.src_16 ! queue ! addhead header-value=18 idx-in-tensor=17 ! datacheck datasize=1048576  header-value=18 idx-in-tensor=17 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=4096 ! udpsink host=10.68.186.155 port=8000 split.src_17 ! queue ! addhead header-value=18 idx-in-tensor=18 ! datacheck datasize=1048576  header-value=18 idx-in-tensor=18 ifseq=1 large-tensor-datasize=61440 small-tensor-datasize=4096 ! udpsink host=10.68.186.155 port=8000 
+
+
+
+# success
+gst-launch-1.0 rawdatagenerator datasize=1048576  header-value=0 idx-in-tensor=25 ifseq=1 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=32:32:256:1, types=float32 ! tensor_split name=split tensorseg=32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:15:1,32:32:1:1 split.src_0 ! queue ! addhead header-value=18 idx-in-tensor=1  ! udpsink host=10.68.186.155 port=8000 split.src_1 ! queue ! addhead header-value=18 idx-in-tensor=2  ! udpsink host=10.68.186.155 port=8000 split.src_2 ! queue ! addhead header-value=18 idx-in-tensor=3 !  udpsink host=10.68.186.155 port=8000 split.src_3 ! queue ! addhead header-value=18 idx-in-tensor=4 !  udpsink host=10.68.186.155 port=8000 split.src_4 ! queue ! addhead header-value=18 idx-in-tensor=5 !  udpsink host=10.68.186.155 port=8000 split.src_5 ! queue ! addhead header-value=18 idx-in-tensor=6 !  udpsink host=10.68.186.155 port=8000 split.src_6 ! queue ! addhead header-value=18 idx-in-tensor=7 ! udpsink host=10.68.186.155 port=8000 split.src_7 ! queue ! addhead header-value=18 idx-in-tensor=8 !  udpsink host=10.68.186.155 port=8000 split.src_8 ! queue ! addhead header-value=18 idx-in-tensor=9 ! udpsink host=10.68.186.155 port=8000 split.src_9 ! queue ! addhead header-value=18 idx-in-tensor=10  ! udpsink host=10.68.186.155 port=8000 split.src_10 ! queue ! addhead header-value=18 idx-in-tensor=11  ! udpsink host=10.68.186.155 port=8000 split.src_11 ! queue ! addhead header-value=18 idx-in-tensor=12 ! udpsink host=10.68.186.155 port=8000 split.src_12 ! queue ! addhead header-value=18 idx-in-tensor=13 ! udpsink host=10.68.186.155 port=8000 split.src_13 ! queue ! addhead header-value=18 idx-in-tensor=14  ! udpsink host=10.68.186.155 port=8000 split.src_14 ! queue ! addhead header-value=18 idx-in-tensor=15 ! udpsink host=10.68.186.155 port=8000 split.src_15 ! queue ! addhead header-value=18 idx-in-tensor=16 ! udpsink host=10.68.186.155 port=8000 split.src_16 ! queue ! addhead header-value=18 idx-in-tensor=17 ! udpsink host=10.68.186.155 port=8000 split.src_17 ! queue ! addhead header-value=18 idx-in-tensor=18  ! udpsink host=10.68.186.155 port=8000 
+
+
+
