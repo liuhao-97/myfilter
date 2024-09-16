@@ -87,26 +87,15 @@ class Addhead(GstBase.BaseTransform):
 
         # Print the buffer data (first 20 bytes for example)
         data = map_info.data
-        print("old Buffer data:", data[:])
+        # print("old Buffer data:", data[:])
 
         # Unmap the buffer when done
         buf.unmap(map_info)
    
-        # new_data = b'20' + b'1' + data[:]
         all_num = struct.pack('B', self.header_value)
-        print(all_num)
         indx = struct.pack('B', self.idx_in_tensor)
-        print(indx)
         new_data = all_num + indx + data[:]
-        # print(new_data)
         
-        # new_memory= Gst.Memory.new_wrapped(0, new_data, len(new_data), 0, None, None)
-        # buf.replace_all_memory(new_memory)
-        # success, map_info = buf.map(Gst.MapFlags.READ)
-        # if success:
-        #     print("New Buffer data:", map_info.data[:])
-        #     buf.unmap(map_info)
-
         new_buffer = Gst.Buffer.new_allocate(None, len(new_data), None)
         success, map_info_new = new_buffer.map(Gst.MapFlags.WRITE)
         if not success:
