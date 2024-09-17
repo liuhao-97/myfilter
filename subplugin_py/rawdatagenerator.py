@@ -133,7 +133,7 @@ class Rawdatagenerator(GstBase.BaseSrc):
             buffer.fill(0, data)   
             self.data_sent = True  # Set the flag to indicate the data was sent
             return Gst.FlowReturn.OK, buffer
-        
+        print('finish data generating')
         return Gst.FlowReturn.EOS, None
     
 
