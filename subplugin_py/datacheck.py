@@ -60,7 +60,7 @@ class Datacheck(GstBase.BaseTransform):
             GObject.TYPE_UINT,  # Property type (unsigned int)
             "data size",     # Property name
             "how many byte to generate",  # Description
-            1, 100000000,             # Allowed range 
+            1, 42949672,             # Allowed range 
             1,                 # Default value
             GObject.ParamFlags.READWRITE  # Property is readable and writable
         ),
@@ -76,7 +76,7 @@ class Datacheck(GstBase.BaseTransform):
             GObject.TYPE_UINT,  # Property type (unsigned int)
             "data size",     # Property name
             "how many byte the single large tensor",  # Description
-            1, 65536,             # Allowed range 
+            1, 42949672,             # Allowed range 
             1,                 # Default value
             GObject.ParamFlags.READWRITE  # Property is readable and writable
         ),
@@ -164,7 +164,7 @@ class Datacheck(GstBase.BaseTransform):
             check_data=check_data+struct.pack('B', self.idx_in_tensor)
 
         if self.small_tensor_datasize == 0:
-            single_frame_size = int(self.datasize/self.header_value)
+            single_frame_size = self.large_tensor_datasize
             check_data=check_data+all_data[single_frame_size*(self.idx_in_tensor-1):single_frame_size*self.idx_in_tensor]
         else:
             if self.idx_in_tensor != self.header_value:
