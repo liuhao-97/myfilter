@@ -48,3 +48,8 @@ gst-launch-1.0 rawdatagenerator datasize=1048576  header-value=0 idx-in-tensor=1
 gst-launch-1.0 udpsrc port=8000 ! queue ! printdata headtail=20 ! datareschedule single-frame-size=61442 accumulate-frame-number=17  ! other/tensors,format=static,num_tensors=1,dimensions=32:32:255:1,types=float32,framerate=0/1 ! merge.sink_0 
 udpsrc port=8001 ! queue ! printdata headtail=20  ! other/tensors,format=static,num_tensors=1,dimensions=32:32:1:1,types=float32,framerate=0/1 ! merge.sink_1 
 tensor_merge name=merge mode=linear option=2 ! other/tensors,format=static,framerate=0/1,num_tensors=1,dimensions=32:32:256:1,types=float32 !  datacheck datasize=1048576  header-value=0 idx-in-tensor=1 ifseq=1 large-tensor-datasize=1048576 small-tensor-datasize=0 start=22 ! fakesink
+
+
+
+
+gst-launch-1.0 udpsrc port=8000 ! queue ! printdata headtail=0  ! datareschedule single-frame-size=102 accumulate-frame-number=1 ! printdata headtail=0  !  other/tensors,format=static,num_tensors=1,dimensions=5:5:1:1,types=float32,framerate=0/1 ! queue ! splitaddhead single-frame-size=100 accumulate-frame-number=1 !  printdata headtail=0  ! udpsink host=10.68.186.155 port=6666
