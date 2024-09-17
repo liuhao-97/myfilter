@@ -16,11 +16,11 @@ ANY_SRC_TEMPLATE = Gst.PadTemplate.new("src",
                                        Gst.Caps.from_string("ANY"))
 
 
-class Rawdatagenerator(GstBase.BaseSrc):
-    GST_PLUGIN_NAME = "rawdatagenerator"
+class Fastrawdatagenerator(GstBase.BaseSrc):
+    GST_PLUGIN_NAME = "fastrawdatagenerator"
 
     __gstmetadata__ = (
-        "rawdatagenerator",  # Name
+        "Fastrawdatagenerator",  # Name
         "Src",  # Class type Transform
         "Custom test src element",  # Description
         "Your Name"  # Author
@@ -72,8 +72,8 @@ class Rawdatagenerator(GstBase.BaseSrc):
     }
 
     def __init__(self):
-        super(Rawdatagenerator, self).__init__()
-        print("Initialized Rawdatagenerator plugin")
+        super(Fastrawdatagenerator, self).__init__()
+        print("Initialized Fastrawdatagenerator plugin")
         # Initialize the property
         self.header_value = 3
         self.idx_in_tensor = 1
@@ -137,6 +137,6 @@ class Rawdatagenerator(GstBase.BaseSrc):
     
 
 # Register the element as a GStreamer plugin
-GObject.type_register(Rawdatagenerator)
-__gstelementfactory__ = (Rawdatagenerator.GST_PLUGIN_NAME, Gst.Rank.NONE, Rawdatagenerator)
+GObject.type_register(Fastrawdatagenerator)
+__gstelementfactory__ = (Fastrawdatagenerator.GST_PLUGIN_NAME, Gst.Rank.NONE, Fastrawdatagenerator)
 
