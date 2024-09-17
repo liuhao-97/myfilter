@@ -79,11 +79,11 @@ class Printdata(GstBase.BaseTransform):
             unpacked_byte_list.append(unpacked_byte[0])
         # print("Buffer data:", data[:])
         if self.headtail > 0:
-            print("first 20 Buffer data:", unpacked_byte_list[0:self.headtail])
-            print("last 20 Buffer data:", unpacked_byte_list[-self.headtail:])
+            print(f"first {self.headtail} Buffer data:", unpacked_byte_list[0:self.headtail])
+            print(f"last {self.headtail} Buffer data:", unpacked_byte_list[-self.headtail:])
         else:
             print("Buffer data:", unpacked_byte_list[:])
-
+        print(f"length {len(unpacked_byte_list)}")
         # Unmap the buffer when done
         buf.unmap(map_info)
    
