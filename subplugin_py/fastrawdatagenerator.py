@@ -122,12 +122,11 @@ class Rawdatagenerator(GstBase.BaseSrc):
             if self.header_value != 0:
                 data=data+struct.pack('B', self.header_value)
                 data=data+struct.pack('B', self.idx_in_tensor)
-            for i in range(self.datasize):
-                # data=data+struct.pack('B', i%3)
-                if self.ifseq == 1:
-                    data=data+struct.pack('B', (self.start +i)%255)
-                else:
-                    data=data+struct.pack('B', self.start)
+
+            if self.ifseq == 1:
+                data = bytearray((self.start + i) % 255 for i in range(self.datasize))
+            else:
+                data = bytearray([self.start] * self.datasize)
 
             buffer = Gst.Buffer.new_allocate(None, len(data), None)
             buffer.fill(0, data)   
