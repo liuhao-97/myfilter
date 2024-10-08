@@ -353,47 +353,45 @@ gst_data_reschedule_chain(GstPad *pad, GstObject *parent, GstBuffer *buf)
     gsize i;
     gsize j;
     gsize idx;
-    if (gst_buffer_map(outbuf, &map, GST_MAP_WRITE))
+    if (accumulate_small_frame_number == 0)
     {
-      for (i = 0; i < accumulate_large_frame_number; i++)
+      if (gst_buffer_map(outbuf, &map, GST_MAP_WRITE))
       {
-        idx = data[i * single_large_frame_size + 1] - 1;
-        // g_print("idx: %zu\n", idx);
-
-        // Copy each frame, skipping the first two bytes
-        // FIX
-        memcpy(map.data + (idx * new_single_large_frame_size), data + (i * single_large_frame_size) + 2, new_single_large_frame_size);
-        // memcpy(map.data + (idx * new_single_frame_size), data + (i * single_frame_size), new_single_frame_size);
-
-        // // Print the new frame in hex format
-        // for (j = 0; j < new_single_frame_size; j++)
-        // {
-        //   g_print("%02x ", map.data[idx * new_single_frame_size + j]);
-        // }
-        // g_print("\n"); // New line after printing each frame
-      }
-
-      if (accumulate_small_frame_number != 0)
-      {
-        for (i = 0; i < accumulate_small_frame_number; i++)
+        for (i = 0; i < accumulate_large_frame_number; i++)
         {
-          // small idx is the idx in all packets, eg. 5 large and 1 small, the idx for small frame is 6. So idx = accumulate_large_frame_number + accumulate_small_frame_number, no need to minus 1
-          idx = data[accumulate_large_frame_number * single_large_frame_size + i * single_small_frame_size + 1];
-          g_print("idx: %zu\n", idx);
-          g_assert(idx == (accumulate_large_frame_number + accumulate_small_frame_number));
-          // g_print("idx: %zu\n", idx);
-
+          idx = data[i * single_large_frame_size + 1] - 1;
           // Copy each frame, skipping the first two bytes
           // FIX
-          // should start from accumulate_large_frame_number * new_single_large_frame_size, nothing related to idx, idx is overall position for small frames (such as 5 large and 1 small, the idx for small frame is 6)
-          memcpy(map.data + (accumulate_large_frame_number * new_single_large_frame_size), data + (accumulate_large_frame_number * single_large_frame_size + i * single_small_frame_size) + 2, new_single_small_frame_size);
+          memcpy(map.data + (idx * new_single_large_frame_size), data + (i * single_large_frame_size) + 2, new_single_large_frame_size);
         }
+        // Unmap the buffer after writing
+        gst_buffer_unmap(outbuf, &map);
       }
-      // // Write data into the buffer (in this case just copy the input data)
-      // memcpy(map.data, data, accumulate_frame_size);
+    }
 
-      // Unmap the buffer after writing
-      gst_buffer_unmap(outbuf, &map);
+    gsize offset = 0;
+    if (accumulate_small_frame_number == 1)
+    {
+      if (gst_buffer_map(outbuf, &map, GST_MAP_WRITE))
+      {
+        for (i = 0; i < accumulate_large_frame_number + accumulate_small_frame_number; i++)
+        {
+
+          if (data[offset] == 1 && data[offset + 1] == (accumulate_large_frame_number + accumulate_small_frame_number)) // the frame is small frame
+          {
+            memcpy(map.data + (accumulate_large_frame_number * new_single_large_frame_size), data + offset + 2, new_single_small_frame_size);
+            offset += single_small_frame_size;
+          }
+          else
+          {
+            idx = data[offset + 1] - 1;
+            memcpy(map.data + (idx * new_single_large_frame_size), data + offset + 2, new_single_large_frame_size);
+            offset += single_large_frame_size;
+          }
+        }
+        // Unmap the buffer after writing
+        gst_buffer_unmap(outbuf, &map);
+      }
     }
 
     // Push the new buffer downstream
