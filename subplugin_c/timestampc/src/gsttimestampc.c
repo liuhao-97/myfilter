@@ -229,7 +229,7 @@ gst_timestampc_chain(GstPad *pad, GstObject *parent, GstBuffer *buf)
   position = filter->position;
 
   clock_gettime(CLOCK_REALTIME, &receive_timestamp);
-  g_print("position: %zu, timestamp: %ld.%ld\n", position, receive_timestamp.tv_sec, receive_timestamp.tv_nsec);
+  g_print("position: %zu, timestamp: %ld, ns:%ld\n", position, receive_timestamp.tv_sec, receive_timestamp.tv_nsec);
   // g_print("position: %zu, timestamp: %.9f %.9f\n", position, timenow);
 
   return gst_pad_push(filter->srcpad, buf);
