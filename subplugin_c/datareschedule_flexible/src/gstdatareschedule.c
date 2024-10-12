@@ -20,6 +20,7 @@
 #include "gstdatareschedule.h"
 #include <gst/base/gstadapter.h>
 #include <gst/gstelement.h>
+#include <time.h>
 
 GST_DEBUG_CATEGORY_STATIC(gst_data_reschedule_debug);
 #define GST_CAT_DEFAULT gst_data_reschedule_debug
@@ -393,6 +394,10 @@ gst_data_reschedule_chain(GstPad *pad, GstObject *parent, GstBuffer *buf)
         gst_buffer_unmap(outbuf, &map);
       }
     }
+
+    struct timespec receive_timestamp;
+    clock_gettime(CLOCK_REALTIME, &receive_timestamp);
+    g_print("position: 1, timestamp: %ld.%ld\n", receive_timestamp.tv_sec, receive_timestamp.tv_nsec);
 
     // Push the new buffer downstream
     ret = gst_pad_push(filter->srcpad, outbuf);

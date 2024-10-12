@@ -20,7 +20,7 @@
 #include "gstsplitaddheadc.h"
 // #include <gst/base/gstadapter.h>
 #include <gst/gstelement.h>
-
+#include <time.h>
 GST_DEBUG_CATEGORY_STATIC(gst_splitaddheadc_debug);
 #define GST_CAT_DEFAULT gst_splitaddheadc_debug
 
@@ -278,6 +278,10 @@ gst_splitaddheadc_chain(GstPad *pad, GstObject *parent, GstBuffer *buf)
   accumulate_large_frame_number = filter->accumulate_large_frame_number;
   accumulate_small_frame_number = filter->accumulate_small_frame_number;
   accumulate_frame_size = single_large_frame_size * accumulate_large_frame_number + single_small_frame_size * accumulate_small_frame_number;
+
+  struct timespec receive_timestamp;
+  clock_gettime(CLOCK_REALTIME, &receive_timestamp);
+  g_print("position: 2, timestamp: %ld.%ld\n", receive_timestamp.tv_sec, receive_timestamp.tv_nsec);
 
   if ((accumulate_small_frame_number == 0 && single_small_frame_size != 0) || (accumulate_small_frame_number != 0 && single_small_frame_size == 0))
   {
