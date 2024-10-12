@@ -397,7 +397,7 @@ gst_data_reschedule_chain(GstPad *pad, GstObject *parent, GstBuffer *buf)
 
     struct timespec receive_timestamp;
     clock_gettime(CLOCK_REALTIME, &receive_timestamp);
-    g_print("position: 1, timestamp: %ld.%ld\n", receive_timestamp.tv_sec, receive_timestamp.tv_nsec);
+    g_print("position: 1, timestamp: %ld, ns:%ld\n", receive_timestamp.tv_sec, receive_timestamp.tv_nsec);
 
     // Push the new buffer downstream
     ret = gst_pad_push(filter->srcpad, outbuf);

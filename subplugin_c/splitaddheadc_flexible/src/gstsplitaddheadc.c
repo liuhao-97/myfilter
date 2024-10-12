@@ -281,7 +281,7 @@ gst_splitaddheadc_chain(GstPad *pad, GstObject *parent, GstBuffer *buf)
 
   struct timespec receive_timestamp;
   clock_gettime(CLOCK_REALTIME, &receive_timestamp);
-  g_print("position: 2, timestamp: %ld.%ld\n", receive_timestamp.tv_sec, receive_timestamp.tv_nsec);
+  g_print("position: 2, timestamp: %ld, ns:%ld\n", receive_timestamp.tv_sec, receive_timestamp.tv_nsec);
 
   if ((accumulate_small_frame_number == 0 && single_small_frame_size != 0) || (accumulate_small_frame_number != 0 && single_small_frame_size == 0))
   {
