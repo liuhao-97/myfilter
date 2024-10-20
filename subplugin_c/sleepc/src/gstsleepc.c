@@ -34,14 +34,14 @@ enum
 enum
 {
   PROP_0,
-  PROP_POSITION,
+  PROP_NS,
   PROP_SILENT
 };
 
 /**
  * @brief Each frame data size in input buffer.
  */
-#define DEFAULT_POSITION 0
+#define DEFAULT_NS 0
 
 /* the capabilities of the inputs and outputs.
  *
@@ -93,10 +93,10 @@ gst_sleepc_class_init(GstSleepcClass *klass)
    *
    */
 
-  g_object_class_install_property(gobject_class, PROP_POSITION,
+  g_object_class_install_property(gobject_class, PROP_NS,
                                   g_param_spec_uint("ns", "nanoseconds",
                                                     "nanoseconds", 0, G_MAXUINT,
-                                                    DEFAULT_POSITION, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+                                                    DEFAULT_NS, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property(gobject_class, PROP_SILENT,
                                   g_param_spec_boolean("silent", "Silent", "Produce verbose output ?",
@@ -135,7 +135,7 @@ gst_sleepc_init(GstSleepc *filter)
 
   filter->silent = FALSE;
 
-  filter->position = DEFAULT_POSITION;
+  filter->ns = DEFAULT_NS;
 }
 
 static void
@@ -146,8 +146,8 @@ gst_sleepc_set_property(GObject *object, guint prop_id,
 
   switch (prop_id)
   {
-  case PROP_POSITION:
-    filter->position = g_value_get_uint(value);
+  case PROP_NS:
+    filter->ns = g_value_get_uint(value);
     break;
   case PROP_SILENT:
     filter->silent = g_value_get_boolean(value);
@@ -166,8 +166,8 @@ gst_sleepc_get_property(GObject *object, guint prop_id,
 
   switch (prop_id)
   {
-  case PROP_POSITION:
-    g_value_set_uint(value, filter->position);
+  case PROP_NS:
+    g_value_set_uint(value, filter->ns);
     break;
   case PROP_SILENT:
     g_value_set_boolean(value, filter->silent);
